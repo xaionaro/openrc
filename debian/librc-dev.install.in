@@ -1,0 +1,4 @@
+debian/tmp@SHLIBDIR@/librc.so           @SHLIBDIR@
+debian/tmp/usr/include/rc.h             /usr/include
+debian/tmp@LIBDIR@/pkgconfig/openrc.pc  @LIBDIR@/pkgconfig
+debian/tmp/usr/share/man/man3/r*        /usr/share/man/man3

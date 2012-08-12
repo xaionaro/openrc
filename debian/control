@@ -17,3 +17,24 @@ Description: OpenRC runlevel change mechamism
  This package provides support for System V init, for booting,
  changing runlevels, starting and stopping services, and
  shutting down.
+
+Package: librc1
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: OpenRC runtime library
+
+Package: librc-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: OpenRC runtime development
+
+Package: libeinfo1
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: OpenRC pretty console display library
+
+Package: libeinfo-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: OpenRC pretty control display development
+
