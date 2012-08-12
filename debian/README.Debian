@@ -1,0 +1,8 @@
+openrc for Debian
+-----------------
+
+This package is EXPERIMENTAL.  Installing it could make your system
+UNBOOTABLE.  Only use this package for testing purposes in a virtual
+machine, unless you are very brave!
+
+ -- Roger Leigh <rleigh@debian.org>  Sun, 12 Aug 2012 21:54:39 +0100

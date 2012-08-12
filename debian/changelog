@@ -1,0 +1,5 @@
+openrc (0.10-1) experimental; urgency=low
+
+  * Initial release (Closes: 684396).
+
+ -- Roger Leigh <Roger Leigh <rleigh@debian.org>>  Sun, 12 Aug 2012 21:54:39 +0100
