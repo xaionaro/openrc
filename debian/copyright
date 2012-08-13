@@ -2,12 +2,19 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: openrc
 Source: git://git.overlays.gentoo.org/proj/openrc.git
 
+Files: debian/*
+Copyright: 2012 Roger Leigh <Roger Leigh <rleigh@debian.org>
+           2012 Thomas Goirand <zigo@debian.org>
+License: BSD-2-clauses
+
 Files: *
 Copyright: 1992-2012 FreeBSD Project
            2004-2007,2011-2012 Gentoo Foundation
            2007-2009 Roy Marples <roy@marples.name>
            2012 William Hubbs <w.d.hubbs@gmail.com>
-License: BSD
+License: BSD-2-clauses
+
+License: BSD-2-clauses
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions
  are met:
