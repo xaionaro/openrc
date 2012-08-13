@@ -30,4 +30,11 @@ install-arch: build-arch $(DH_INSTALL_FILES)
 install-indep: build-indep $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
 
+make-orig-file:
+	git checkout master
+	git archive --prefix=openrc-$(shell ./debian/upstream-version)/ master | xz >../openrc_$(shell ./debian/upstream-version).orig.tar.xz
+	mkdir -p ../build-area
+	cp -auxf ../openrc_$(shell ./debian/upstream-version).orig.tar.xz ../build-area
+	git checkout debian
+
 .PHONY: override_dh_auto_clean install-arch install-indep

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+dpkg-parsechangelog | grep Version | cut -d" " -f2 | cut -d- -f1
