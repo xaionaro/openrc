@@ -13,28 +13,75 @@ Architecture: any
 Conflicts: sysv-rc
 Replaces: sysv-rc
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: OpenRC runlevel change mechamism
- This package provides support for System V init, for booting,
- changing runlevels, starting and stopping services, and
+Description: dependency based init system (runlevel change mechamism)
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
  shutting down.
+ .
+ Originally written as Originally written as a Gentoo project, OpenRC is 100%
+ compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
+ by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
+ style init system historically available in Debian.
+ .
+ This package provides the runlevel change mechamism.
 
 Package: librc1
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: OpenRC runtime library
+Description: dependency based init system (runtime library)
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
+ shutting down.
+ .
+ Originally written as Originally written as a Gentoo project, OpenRC is 100%
+ compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
+ by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
+ style init system historically available in Debian.
+ .
+ This package provides the runtime library.
 
 Package: librc-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: OpenRC runtime development
+Description: dependency based init system (runtime development)
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
+ shutting down.
+ .
+ Originally written as Originally written as a Gentoo project, OpenRC is 100%
+ compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
+ by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
+ style init system historically available in Debian.
+ .
 
 Package: libeinfo1
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: OpenRC pretty console display library
+Description: dependency based init system (pretty console display library)
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
+ shutting down.
+ .
+ Originally written as Originally written as a Gentoo project, OpenRC is 100%
+ compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
+ by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
+ style init system historically available in Debian.
+ .
+ This package provides a runtime library that supports displaying messages on
+ the console.
 
 Package: libeinfo-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: OpenRC pretty control display development
-
+Description: dependency based init system (pretty control display development)
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
+ shutting down.
+ .
+ Originally written as Originally written as a Gentoo project, OpenRC is 100%
+ compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
+ by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
+ style init system historically available in Debian.
+ .
+ This package provides a development library that supports displaying messages
+ on the console.
