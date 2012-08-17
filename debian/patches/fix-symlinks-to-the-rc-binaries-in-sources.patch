@@ -1,0 +1,25 @@
+Description: Fix symlinks to alternative names of rc when building
+ OpenRC does like busybox: it has alternative names, and reads $0
+ to know what it is used for.
+ .
+ Unfortunately, there was a regression, and in Gentoo, the unit test
+ doesn't crash because OpenRC is already installed. This fixes it.
+Forwarded: no
+Author: Thomas Goirand <zigo@debian.org>
+Reviewed-By: Patrick Lauer <patrick@gentoo.org>
+
+--- openrc-0.10.orig/test/setup_env.sh
++++ openrc-0.10/test/setup_env.sh
+@@ -12,6 +12,12 @@ builddir=${builddir:-${srcdir}}
+ export LD_LIBRARY_PATH=${top_builddir}/src/libeinfo:${top_builddir}/src/librc:${LD_LIBRARY_PATH}
+ export PATH=${top_builddir}/src/rc:${PATH}
+ 
++# Fixup rc alt names so building with OpenRC installed works
++for i in eend ; do
++	if [ ! -h ${top_builddir}/src/rc/${i} ] ; then
++		ln -s rc ${top_builddir}/src/rc/${i}
++	fi
++done
+ 
+ if [ ! -f ${top_srcdir}/sh/functions.sh ] ; then
+ 	echo "functions.sh not yet created !?" 1>&2

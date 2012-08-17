@@ -1,7 +1,6 @@
 *.bz2
 
 *.diff
-*.patch
 *.orig
 *.rej
 
