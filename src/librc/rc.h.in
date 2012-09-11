@@ -33,6 +33,7 @@
 
 __BEGIN_DECLS
 
+#define RC_PREFIX "@PREFIX@"
 #define RC_SYSCONFDIR		"@SYSCONFDIR@"
 #define RC_LIBDIR               "@PREFIX@/@LIB@/rc"
 #define RC_LIBEXECDIR           "@LIBEXECDIR@"
@@ -280,6 +281,7 @@ bool rc_service_daemons_crashed(const char *);
 #define RC_SYS_JAIL    "JAIL"
 #define RC_SYS_OPENVZ  "OPENVZ"
 #define RC_SYS_LXC     "LXC"
+#define RC_SYS_PREFIX  "PREFIX"
 #define RC_SYS_UML     "UML"
 #define RC_SYS_VSERVER "VSERVER"
 #define RC_SYS_XEN0    "XEN0"

@@ -23,10 +23,10 @@ depend()
 		need sysfs
 	fi
 	after bootmisc
-	keyword -jail -vserver
+	keyword -jail -prefix -vserver
 
 	case "${IFACE}" in
-		lo|lo0) provide lo;;
+		lo|lo0) ;;
 		*)
 			after net.lo net.lo0 dbus
 			provide net
