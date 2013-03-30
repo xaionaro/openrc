@@ -14,7 +14,7 @@ ifeq (${MKNET},)
 BOOT+= network staticroute
 endif
 
-INITDIR=	../init.d
+INITFILES=	../init.d
 
 MK=		../mk
 include ${MK}/sys.mk
@@ -38,9 +38,9 @@ BOOT-FreeBSD+=	hostid newsyslog savecore syslogd
 # FreeBSD specific stuff
 BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
-BOOT-Linux+=	hwclock keymaps modules mtab procfs termencoding
+BOOT-Linux+=	hwclock keymaps modules mtab procfs termencoding tmpfiles.setup
 SHUTDOWN-Linux=	killprocs mount-ro
-SYSINIT-Linux=	devfs dmesg
+SYSINIT-Linux=	devfs dmesg sysfs
 
 # Generic BSD stuff
 BOOT-NetBSD+=	hostid newsyslog savecore syslogd
@@ -54,34 +54,34 @@ install:
 		${INSTALL} -d ${SYSINITDIR} || exit $$?; \
 		for x in ${SYSINIT}; do \
 			if test -n "${PREFIX}"; then \
-				grep -q "keyword .*-prefix" ${INITDIR}/"$$x" && continue; \
+				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
-			ln -snf ${PREFIX}/etc/init.d/"$$x" ${SYSINITDIR}/"$$x" || exit $$?; done \
+			ln -snf ${INITDIR}/"$$x" ${SYSINITDIR}/"$$x" || exit $$?; done \
 	fi
 	if ! test -d "${BOOTDIR}"; then \
 		${INSTALL} -d ${BOOTDIR} || exit $$?; \
 		for x in ${BOOT}; do \
 			if test -n "${PREFIX}"; then \
-				grep -q "keyword .*-prefix" ${INITDIR}/"$$x" && continue; \
+				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
-			ln -snf ${PREFIX}/etc/init.d/"$$x" ${BOOTDIR}/"$$x" || exit $$?; \
+			ln -snf ${INITDIR}/"$$x" ${BOOTDIR}/"$$x" || exit $$?; \
 		done \
 	fi
 	if ! test -d "${DEFAULTDIR}"; then \
 		${INSTALL} -d ${DEFAULTDIR} || exit $$?; \
 		for x in ${DEFAULT}; do \
 			if test -n "${PREFIX}"; then \
-				grep -q "keyword .*-prefix" ${INITDIR}/"$$x" && continue; \
+				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
-			ln -snf ${PREFIX}/etc/init.d/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
+			ln -snf ${INITDIR}/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
 	fi
 	if ! test -d "${SHUTDOWNDIR}"; then \
 		${INSTALL} -d ${SHUTDOWNDIR} || exit $$?; \
 		for x in ${SHUTDOWN}; do \
 			if test -n "${PREFIX}"; then \
-				grep -q "keyword .*-prefix" ${INITDIR}/"$$x" && continue; \
+				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
-			ln -snf ${PREFIX}/etc/init.d/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \
+			ln -snf ${INITDIR}/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \
 	fi
 
 check test::

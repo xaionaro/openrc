@@ -4,6 +4,12 @@
 bonding_depend()
 {
 	before interface macchanger
+	program /sbin/ifconfig /bin/ifconfig
+	# If you do not have sysfs, you MUST have this binary instead for ioctl
+	# Also you will loose some functionality that cannot be done via sysfs:
+	if [ ! -d /sys/class/net ]; then
+		program /sbin/ifenslave
+	fi
 }
 
 _config_vars="$_config_vars slaves"
@@ -23,6 +29,9 @@ bonding_pre_start()
 	eval primary="\$primary_${IFVAR}"
 	unset primary_${IFVAR}
 
+	eval subsume="\$subsume_${IFVAR}"
+	unset subsume_${IFVAR}
+
 
 	[ -z "${slaves}" ] && return 0
 
@@ -32,6 +41,10 @@ bonding_pre_start()
 			eerror "Cannot load the bonding module"
 			return 1
 		fi
+	fi
+
+	if [ ! -d /sys/class/net ]; then
+		ewarn "sysfs is not available! You will be unable to create new bonds, or change dynamic parameters!"
 	fi
 
 	# We can create the interface name we like now, but this
@@ -51,7 +64,18 @@ bonding_pre_start()
 
 	# Configure the bond mode, then we can reloop to ensure we configure
 	# All other options
-	for x in /sys/class/net/"${IFACE}"/bonding/mode; do
+	[ -d /sys/class/net ] && for x in /sys/class/net/"${IFACE}"/bonding/mode; do
+		[ -f "${x}" ] || continue
+		n=${x##*/}
+		eval s=\$${n}_${IFVAR}
+		if [ -n "${s}" ]; then
+			einfo "Setting ${n}: ${s}"
+			echo "${s}" >"${x}" || \
+			eerror "Failed to configure $n (${n}_${IFVAR})"
+		fi
+	done
+	# Configure link monitoring
+	for x in /sys/class/net/"${IFACE}"/bonding/miimon; do
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
@@ -62,11 +86,11 @@ bonding_pre_start()
 		fi
 	done
 	# Nice and dynamic for remaining options:)
-	for x in /sys/class/net/"${IFACE}"/bonding/*; do
+	[ -d /sys/class/net ] && for x in /sys/class/net/"${IFACE}"/bonding/*; do
 		[ -f "${x}" ] || continue
 		n=${x##*/}
 		eval s=\$${n}_${IFVAR}
-		[ "${n}" != "mode" ] || continue
+		[ "${n}" != "mode" -o "${n}" != "miimon" ] || continue
 		if [ -n "${s}" ]; then
 			einfo "Setting ${n}: ${s}"
 			echo "${s}" >"${x}" || \
@@ -84,15 +108,44 @@ bonding_pre_start()
 		_exists true || return 1
 	done
 
-	# Must force the slaves to a particular state before adding them
-	for IFACE in ${slaves}; do
-		_delete_addresses
-		_down
-	done
+	# Unless we are subsuming an existing interface (NFS root), we down
+	# slave interfaces to work around bugs supposedly in some chipsets
+	# that cause failure to enslave from other states.
+	if [ -z "${subsume}" ]; then
+		for IFACE in ${slaves}; do
+			_delete_addresses
+			_down
+		done
+	fi
 	)
 
-	# now force the master to up
-	_up
+	# Now force the master to up
+	#  - First test for interface subsume request (required for NFS root)
+	if [ -n "${subsume}" ]; then
+		einfo "Subsuming ${subsume} interface characteristics."
+		eindent
+		local oiface=${IFACE}
+		IFACE=${subsume}
+		local addr="$(_get_inet_address)"
+		einfo "address: ${addr}"
+		IFACE=${oiface}
+		unset oiface
+		eoutdent
+		# subsume (presumably kernel auto-)configured IP
+		ifconfig ${IFACE} ${addr} up
+	else
+		# warn if root on nfs and no subsume interface supplied
+		local root_fs_type=$(mountinfo -s /)
+		if [ "${root_fs_type}" == "nfs" ]; then
+			warn_nfs=1
+			ewarn "NFS root detected!!!"
+			ewarn " If your system crashes here, /etc/conf.d/net needs"
+			ewarn " subsume_${IFACE}=\"<iface>\" ... where <iface> is the"
+			ewarn " existing, (usually kernel auto-)configured interface."
+		fi
+		# up the interface
+		_up
+    fi
 
 	# finally add in slaves
 	# things needed in the process, and if they are done by ifenslave, openrc, and/or the kernel.
@@ -121,7 +174,7 @@ bonding_pre_start()
 			fi
 		done
 	else
-		/sbin/ifenslave "${IFACE}" ${slaves} >/dev/null
+		ifenslave "${IFACE}" ${slaves} >/dev/null
 	fi
 	eend $?
 
@@ -131,6 +184,11 @@ bonding_pre_start()
 bonding_stop()
 {
 	_is_bond || return 0
+
+	# Wipe subsumed interface
+	if [ -n "${subsume}" ]; then
+		ifconfig ${subsume} 0.0.0.0
+	fi
 
 	local slaves= s=
 	slaves=$( \
@@ -149,7 +207,7 @@ bonding_stop()
 			echo -"${s}" > /sys/class/net/"${IFACE}"/bonding/slaves
 		done
 	else
-		/sbin/ifenslave -d "${IFACE}" ${slaves}
+		ifenslave -d "${IFACE}" ${slaves}
 	fi
 
 	# reset all slaves

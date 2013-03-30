@@ -9,41 +9,21 @@ if ! mountinfo -q -f tmpfs "@LIBEXECDIR@/init.d"; then
 	exit 0
 fi
 
-if [ ! -d "@PREFIX@/run" ]; then
-	eerror "'@PREFIX@/run' is not a directory."
-	eerror "This means the OpenRC dependency data cannot be migrated."
-	eerror "Please create the '@PREFIX@/run' directory and reboot the system."
-	exit 1
+if [ ! -d /run ]; then
+	eerror "/run is not a directory."
+	eerror "moving /run to /run.pre-openrc"
+	mv /run /run.pre-openrc
+	mkdir /run
 fi
 
-if ! mountinfo -q -f tmpfs "@PREFIX@/run"; then
-	for x in "@PREFIX@/run/."* "@PREFIX@/run/"*; do
-		case "$x" in
-			"@PREFIX@/run/."|"@PREFIX@/run/..")
-				continue
-				;;
-		esac
-		if [ -e "$x" ]; then
-				eerror "Your '@PREFIX@/run' directory contains files."
-				eerror "Please reboot the system."
-				exit 1
-		fi
-	done
+rm -rf /run/openrc
 
-	mount -t tmpfs -o mode=0755,nosuid,nodev \
-		tmpfs "@PREFIX@/run" 2> /dev/null
-	if [ $? != 0 ]; then
-		eerror "Unable to mount a tmpfs on '@PREFIX@/run'."
-		eerror "This means the OpenRC dependency data cannot be migrated."
-		eerror "Please create the '@PREFIX@/run' directory and reboot the system."
-		exit 1
-	fi
+if ! mountinfo -q -f tmpfs /run; then
+	ln -s "@LIBEXECDIR@"/init.d /run/openrc
+else
+	cp -a "@LIBEXECDIR@/init.d" /run/openrc
+	rc-update -u
 fi
 
-rm -rf "@PREFIX@/run/openrc"
-cp -a "@LIBEXECDIR@/init.d" "@PREFIX@/run/openrc"
-rc-update -u
-rm -rf "@LIBEXECDIR@/init.d"
-umount "@LIBEXECDIR@/init.d"
 einfo "The OpenRC dependency data was migrated successfully."
 exit 0

@@ -19,7 +19,7 @@ depend()
 	local IFVAR=$(shell_var "${IFACE}")
 
 	need localmount
-	if [ "$RC_UNAME" = Linux ]; then
+	if [ "$RC_UNAME" = Linux -a "$IFACE" != lo ]; then
 		need sysfs
 	fi
 	after bootmisc
@@ -108,7 +108,7 @@ _wait_for_carrier()
 	_has_carrier  && return 0
 
 	eval timeout=\$carrier_timeout_${IFVAR}
-	timeout=${timeout:-${carrier_timeout:-5}}
+	timeout=${timeout:-${carrier_timeout:-0}}
 
 	# Incase users don't want this nice feature ...
 	[ ${timeout} -le 0 ] && return 0

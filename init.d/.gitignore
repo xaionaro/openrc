@@ -41,3 +41,4 @@ syslogd
 termencoding
 ttys
 wscons
+tmpfiles.setup

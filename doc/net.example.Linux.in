@@ -126,6 +126,13 @@
 # tables you may have to set a global metric as the due to a simple read of
 # the routing table taking over a minute at a time.
 
+# Most drivers that report carrier status function correctly, but some do not
+# One of these faulty drivers is for the Intel e1000 network card, but only
+# at boot time. To get around this you may alter the carrier_timeout value for
+# the interface. 0 is disable and any other number of seconds is how
+# long we wait for carrier. The current default is disabled.
+#carrier_timeout_eth0=0
+
 # You may wish to disable the interface being brought down when stopping.
 # This is only of use for WakeOnLan.
 #ifdown_eth0="NO"
@@ -646,6 +653,17 @@
 # ppp devices - we need to depend function on the bonded interfaces
 #rc_net_bond0_need="net.eth0 net.eth1"
 
+# Bonding subsume support (prevents crashes for root-on-NFS)
+#  - Only tested in the default bonding mode ('active-backup') with
+# IPv4
+#  - Only subsumes basic interface characteristics (IP, netmask) and
+#    excludes additional routes, interface properties such as MTU,
+#    interface-associated netfilter rules, etc.
+# In the example below, the (usually kernel-autoconfigured)
+# 'eth0' interface is a member of bond0, which subsumes the
+# existing interface configuration without upsetting NFS.
+#slaves_bond0="eth0 eth1"
+#subsume_bond0="eth0"
 
 #-----------------------------------------------------------------------------
 # Classical IP over ATM
@@ -1118,6 +1136,13 @@
 
 # Hypothetical network card that requires a change-eeprom toggle to enable flashing
 #ethtool_order_eth0="change-eeprom flash change pause coalesce ring offload nfc rxfh-indir ntuple"
+
+#-----------------------------------------------------------------------------
+# Firewalld support
+# If you are using the firewalld daemon to configure your firewall
+# settings and you have specific zones you want to apply to your
+# interfaces, you can do this here.
+#firewalld_zone_eth0="myzone"
 
 ##############################################################################
 # ADVANCED CONFIGURATION
