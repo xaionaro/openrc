@@ -3,3 +3,4 @@ debian/tmp/sbin               /
 debian/tmp/libexec            /
 debian/tmp/etc                /
 debian/tmp/usr/share/man/man8 /usr/share/man
+debian/inittab /usr/share/openrc
