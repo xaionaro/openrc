@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+
+if [ "${1}" = "configure" ] ; then
+	if [ -e /etc/inittab ] ; then
+		CUR_INITTAB=`md5sum /etc/inittab | cut -d' ' -f1`
+		if [ "${CUR_INITTAB}" = "5a107e6c5de94c95d3f2802e377670d5" ] ; then
+			echo "Replacing pristine /etc/inittab for booting with OpenRC"
+			cp /usr/share/openrc/inittab /etc
+		else
+			echo "Warning: /etc/inittab has been modifed. If your system was configured to use
+sysv-rc, then you must activate changes by hand, by either editing inittab with
+a text editor, or copying it from /usr/share/openrc/inittab. For example you
+can do the following to activate OpenRC:
+
+# cp /usr/share/openrc/inittab /etc
+"
+		fi
+	else
+		cp /usr/share/openrc/inittab /etc
+	fi
+fi
+
+#DEBHELPER#
+
+exit 0
