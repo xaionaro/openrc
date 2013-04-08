@@ -36,6 +36,11 @@ install-arch: build-arch $(DH_INSTALL_FILES)
 install-indep: build-indep $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
 
+override_dh_installmenu:
+	rm -f $(CURDIR)/debian/openrc/sbin/start-stop-daemon
+	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/start-stop-daemon.8
+	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/start-stop-daemon.8.gz
+
 get-upstream-sources:
 	git remote add upstream git://git.overlays.gentoo.org/proj/openrc.git || true
 	git fetch upstream
