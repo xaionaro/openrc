@@ -1,0 +1,264 @@
+Description: This patch adds support for the sysv-rc LSB headers
+Author: heroxbd <heroxbd@gentoo.org>
+Origin: upstream
+
+--- openrc-0.11.8.orig/init.d/procfs.in
++++ openrc-0.11.8/init.d/procfs.in
+@@ -6,7 +6,7 @@ description="Mounts misc filesystems in
+ 
+ depend()
+ {
+-	use modules devfs
++	use modules sysfs
+ 	need localmount
+ 	keyword -openvz -prefix -vserver -lxc
+ }
+--- openrc-0.11.8.orig/src/rc/rc-misc.c
++++ openrc-0.11.8/src/rc/rc-misc.c
+@@ -255,12 +255,13 @@ svc_unlock(const char *applet, int fd)
+ pid_t
+ exec_service(const char *service, const char *arg)
+ {
+-	char *file, sfd[32];
++	char *file, sfd[32], bsvc[32];
+ 	int fd;
+ 	pid_t pid = -1;
+ 	sigset_t full;
+ 	sigset_t old;
+ 	struct sigaction sa;
++	FILE *fsvc;
+ 
+ 	fd = svc_lock(basename_c(service));
+ 	if (fd == -1)
+@@ -295,10 +296,18 @@ exec_service(const char *service, const
+ 		/* Unmask signals */
+ 		sigprocmask(SIG_SETMASK, &old, NULL);
+ 
+-		/* Safe to run now */
+-		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
+-		fprintf(stderr, "unable to exec `%s': %s\n",
+-		    file, strerror(errno));
++		/* Safe to run now, to support scripts without runscript shebang
++		   we need to make a check first. */
++		fsvc = fopen(file,"r");
++		fgets(bsvc, sizeof(bsvc), fsvc);
++		if (strstr(bsvc, "runscript")) {
++			execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
++			fprintf(stderr, "unable to exec `%s': %s\n",
++			    file, strerror(errno));
++		} else {
++			execl(file, file, arg, (char *) NULL);
++		}
++
+ 		svc_unlock(basename_c(service), fd);
+ 		_exit(EXIT_FAILURE);
+ 	}
+--- openrc-0.11.8.orig/scripts/Makefile
++++ openrc-0.11.8/scripts/Makefile
+@@ -1,5 +1,5 @@
+ DIR=	${LIBEXECDIR}/bin
+-BIN=	on_ac_power
++BIN=	on_ac_power lsb.pl
+ 
+ MK=	../mk
+ include ${MK}/scripts.mk
+--- /dev/null
++++ openrc-0.11.8/scripts/lsb.pl
+@@ -0,0 +1,108 @@
++#!/usr/bin/perl
++# parse lsb header and print as in OpenRC style.
++# base code borrowed from update-rc.d of Debian
++
++use Switch;
++use File::Basename;
++
++my $initdscript = shift;
++my $name = basename($initdscript);
++my %lsb2orc = ('$remote_fs' => 'netmount',
++	       '$local_fs' => 'localmount',
++	       'mountdevsubfs' => 'devfs',
++	       '$syslog' => 'logger',
++	       '$time' => 'clock',
++	       '$all' => '*',
++	       'nfs-common' => 'rpc.statd',
++	       '$network' => 'net',
++	       'mountkernfs' => 'procfs',
++	       '$portmap' => 'rpcbind');
++
++my %vsrv;
++open(VSERV, "</etc/insserv.conf") || die "error: unable to read /etc/insserv.conf";
++while (<VSERV>){
++    next if (m/^\#.*/);
++    chomp;
++    if (m/^(\$\w+)\s*(\S?.*)$/i) {
++	my $vs=$1;
++	foreach $srv (split(/ /,$2)) {
++	    if ($srv =~ m/\+(\S?.*)/i) {
++		$vsrv{$1} = $vs;
++	    }
++	}
++    }
++}
++
++my %lsbinfo;
++my $lsbheaders = "Provides|Required-Start|Required-Stop|Default-Start|Default-Stop|Short-Description|Description|Should-Start|Should-Stop|X-Start-Before|X-Start-After";
++open(INIT, "<$initdscript") || die "error: unable to read $initdscript";
++while (<INIT>) {
++    chomp;
++    $lsbinfo{'found'} = 1 if (m/^\#\#\# BEGIN INIT INFO\s*$/);
++    last if (m/\#\#\# END INIT INFO\s*$/);
++    if (m/^\# ($lsbheaders):\s*(\S?.*)$/i) {
++	$lsbinfo{lc($1)} = $2;
++    }
++}
++close(INIT);
++
++my $dep='';
++my $des='';
++
++sub l2of {
++    my @value;
++    my $items = shift;
++    foreach $v (split(/ /, $items)) {
++	if($lsb2orc{$v}){
++	    $v=$lsb2orc{$v}
++	}
++	push(@value,$v)
++    }
++    return join(" ", @value)
++}
++
++# Check that all the required headers are present
++if ($lsbinfo{found}) {
++    foreach $key (keys %lsbinfo) {
++	switch ($key) {
++	    case "provides" {
++		my @value;
++		foreach $v (split(/ /, $lsbinfo{$key})) {
++		    push(@value, $lsb2orc{$vsrv{$v}}) if($vsrv{$v});
++		    push(@value, $lsb2orc{$v}) if ($v);
++		    push(@value, $v) if ($v ne $name);
++		}
++		if (@value) {
++		    $dep .= "\tprovide " . join(" ", @value) . "\n";
++		}
++	    }
++	    case "required-start" {
++		my $ret = l2of $lsbinfo{$key};
++		if($ret) {$dep .= "\tneed " . $ret . "\n"}
++	    }
++	    case "required-stop" {}
++	    case "default-start" {}
++	    case "default-stop" {}
++	    case "short-description" {
++		$des .= 'description="'.$lsbinfo{$key}.'"'."\n";
++	    }
++	    case "description" {}
++	    case "should-start" {
++		my $ret = l2of $lsbinfo{$key};
++		if ($ret) {$dep .= "\tuse " . $ret . "\n"}
++	    }
++	    case "should-stop" {}
++	    case "x-start-before" {
++		my $ret = l2of $lsbinfo{$key};
++		if ($ret) {$dep .= "\tbefore " . $ret . "\n"}
++	    }
++	    case "x-start-after" {
++		my $ret = l2of $lsbinfo{$key};
++		if ($ret) {$dep .= "\tafter " . $ret . "\n"}
++	    }
++	}
++    }
++}
++if ($dep) {$rst = "depend () {\n" . $dep . "}\n"};
++if ($des) {$rst = $des . "\n" . $rst};
++print $rst
+--- openrc-0.11.8.orig/sh/runscript.sh.in
++++ openrc-0.11.8/sh/runscript.sh.in
+@@ -205,28 +205,33 @@ fi
+ [ -n "${rc_ulimit:-$RC_ULIMIT}" ] && ulimit ${rc_ulimit:-$RC_ULIMIT}
+ 
+ # Load our script
+-sourcex "$RC_SERVICE"
+-
+-for _d in $required_dirs; do
+-	if [ ! -d $_d ]; then
+-		eerror "$RC_SVCNAME: \`$_d' is not a directory"
+-		exit 1
+-	fi
+-done
+-unset _d
+-
+-for _f in $required_files; do
+-	if [ ! -r $_f ]; then
+-		eerror "$RC_SVCNAME: \`$_f' is not readable"
+-		exit 1
++lsbh=$(lsb.pl "$RC_SERVICE")
++if [ -n "${lsbh}" ]; then
++	eval "${lsbh}"
++else
++	sourcex "$RC_SERVICE"
++
++	for _d in $required_dirs; do
++		if [ ! -d $_d ]; then
++			eerror "$RC_SVCNAME: \`$_d' is not a directory"
++			exit 1
++		fi
++	done
++	unset _d
++
++	for _f in $required_files; do
++		if [ ! -r $_f ]; then
++			eerror "$RC_SVCNAME: \`$_f' is not readable"
++			exit 1
++		fi
++	done
++	unset _f
++
++	if [ -n "$opts" ]; then
++			ewarn "Use of the opts variable is deprecated and will be"
++			ewarn "removed in the future."
++			ewarn "Please use extra_commands, extra_started_commands or extra_stopped_commands."
+ 	fi
+-done
+-unset _f
+-
+-if [ -n "$opts" ]; then
+-		ewarn "Use of the opts variable is deprecated and will be"
+-		ewarn "removed in the future."
+-		ewarn "Please use extra_commands, extra_started_commands or extra_stopped_commands."
+ fi
+ 
+ while [ -n "$1" ]; do
+@@ -240,7 +245,11 @@ while [ -n "$1" ]; do
+ 		_depend
+ 		cd /
+ 		continue
++	elif [ -n "${lsbh}" ]; then
++		. "${RC_SERVICE}"
++		continue
+ 	fi
++
+ 	# See if we have the required function and run it
+ 	for _cmd in describe start stop status ${extra_commands:-$opts} \
+ 		$extra_started_commands $extra_stopped_commands
+--- openrc-0.11.8.orig/sh/gendepends.sh.in
++++ openrc-0.11.8/sh/gendepends.sh.in
+@@ -81,10 +81,14 @@ do
+ 
+ 		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
+ 
+-		if . "$_dir/$RC_SVCNAME"; then
+-			echo "$RC_SVCNAME" >&3
+-			_depend
++		lsbh=$(lsb.pl "$RC_SERVICE")
++		if [ -n "${lsbh}" ]; then
++			eval "${lsbh}"
++		else
++			. "$_dir/$RC_SVCNAME"
+ 		fi
++		echo "$RC_SVCNAME" >&3
++		_depend
+ 		)
+ 	done
+ done
