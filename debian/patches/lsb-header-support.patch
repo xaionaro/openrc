@@ -13,46 +13,6 @@ Origin: upstream
  	need localmount
  	keyword -openvz -prefix -vserver -lxc
  }
---- openrc-0.11.8.orig/src/rc/rc-misc.c
-+++ openrc-0.11.8/src/rc/rc-misc.c
-@@ -255,12 +255,13 @@ svc_unlock(const char *applet, int fd)
- pid_t
- exec_service(const char *service, const char *arg)
- {
--	char *file, sfd[32];
-+	char *file, sfd[32], bsvc[32];
- 	int fd;
- 	pid_t pid = -1;
- 	sigset_t full;
- 	sigset_t old;
- 	struct sigaction sa;
-+	FILE *fsvc;
- 
- 	fd = svc_lock(basename_c(service));
- 	if (fd == -1)
-@@ -295,10 +296,18 @@ exec_service(const char *service, const
- 		/* Unmask signals */
- 		sigprocmask(SIG_SETMASK, &old, NULL);
- 
--		/* Safe to run now */
--		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
--		fprintf(stderr, "unable to exec `%s': %s\n",
--		    file, strerror(errno));
-+		/* Safe to run now, to support scripts without runscript shebang
-+		   we need to make a check first. */
-+		fsvc = fopen(file,"r");
-+		fgets(bsvc, sizeof(bsvc), fsvc);
-+		if (strstr(bsvc, "runscript")) {
-+			execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
-+			fprintf(stderr, "unable to exec `%s': %s\n",
-+			    file, strerror(errno));
-+		} else {
-+			execl(file, file, arg, (char *) NULL);
-+		}
-+
- 		svc_unlock(basename_c(service), fd);
- 		_exit(EXIT_FAILURE);
- 	}
 --- openrc-0.11.8.orig/scripts/Makefile
 +++ openrc-0.11.8/scripts/Makefile
 @@ -1,5 +1,5 @@
@@ -64,7 +24,7 @@ Origin: upstream
  include ${MK}/scripts.mk
 --- /dev/null
 +++ openrc-0.11.8/scripts/lsb.pl
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,131 @@
 +#!/usr/bin/perl
 +# parse lsb header and print as in OpenRC style.
 +# base code borrowed from update-rc.d of Debian
@@ -74,16 +34,17 @@ Origin: upstream
 +
 +my $initdscript = shift;
 +my $name = basename($initdscript);
-+my %lsb2orc = ('$remote_fs' => 'netmount',
-+	       '$local_fs' => 'localmount',
-+	       'mountdevsubfs' => 'devfs',
-+	       '$syslog' => 'logger',
-+	       '$time' => 'clock',
++my %lsb2orc = (#'$remote_fs' => 'netmount',
++	       #'$local_fs' => 'localmount',
++	       #'mountdevsubfs' => 'devfs',
++	       #'$syslog' => 'logger',
++	       #'$time' => 'clock',
 +	       '$all' => '*',
-+	       'nfs-common' => 'rpc.statd',
-+	       '$network' => 'net',
-+	       'mountkernfs' => 'procfs',
-+	       '$portmap' => 'rpcbind');
++	       #'nfs-common' => 'rpc.statd',
++	       #'$network' => 'net',
++	       #'mountkernfs' => 'procfs',
++	       #'$portmap' => 'rpcbind'
++			);
 +
 +my %vsrv;
 +open(VSERV, "</etc/insserv.conf") || die "error: unable to read /etc/insserv.conf";
@@ -128,6 +89,23 @@ Origin: upstream
 +    return join(" ", @value)
 +}
 +
++#Bug 714039
++my $ifall = 0;
++
++sub isall {
++	my $ret = shift;
++	my @rets;
++	foreach $t (split(/ /, $ret)) {
++		if("*" eq $t){
++			$ifall = 1;
++		}else{
++			push(@rets,$t);
++		}
++	}
++	return join(" ", @rets);
++}
++#end
++
 +# Check that all the required headers are present
 +if ($lsbinfo{found}) {
 +    foreach $key (keys %lsbinfo) {
@@ -145,7 +123,15 @@ Origin: upstream
 +	    }
 +	    case "required-start" {
 +		my $ret = l2of $lsbinfo{$key};
-+		if($ret) {$dep .= "\tneed " . $ret . "\n"}
++		if($ret) {
++			#This code will no longer need when the bug be resolved.
++			#Bug 714039
++			my $rets = isall($ret);
++			if($ifall){
++				$dep .= "\tneed " . $rets . "\n";
++				$dep .= "\tuse " . "*" . "\n";
++			}else{$dep .= "\tneed " . $ret . "\n"}
++		}
 +	    }
 +	    case "required-stop" {}
 +	    case "default-start" {}
@@ -163,16 +149,33 @@ Origin: upstream
 +		my $ret = l2of $lsbinfo{$key};
 +		if ($ret) {$dep .= "\tbefore " . $ret . "\n"}
 +	    }
-+	    case "x-start-after" {
-+		my $ret = l2of $lsbinfo{$key};
-+		if ($ret) {$dep .= "\tafter " . $ret . "\n"}
-+	    }
++	    case "x-stop-after" {}
 +	}
 +    }
 +}
 +if ($dep) {$rst = "depend () {\n" . $dep . "}\n"};
 +if ($des) {$rst = $des . "\n" . $rst};
 +print $rst
+--- openrc-0.11.8.orig/sh/gendepends.sh.in
++++ openrc-0.11.8/sh/gendepends.sh.in
+@@ -81,10 +81,14 @@ do
+ 
+ 		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
+ 
+-		if . "$_dir/$RC_SVCNAME"; then
+-			echo "$RC_SVCNAME" >&3
+-			_depend
++		lsbh=$(lsb.pl "$RC_SERVICE")
++		if [ -n "${lsbh}" ]; then
++			eval "${lsbh}"
++		else
++			. "$_dir/$RC_SVCNAME"
+ 		fi
++		echo "$RC_SVCNAME" >&3
++		_depend
+ 		)
+ 	done
+ done
 --- openrc-0.11.8.orig/sh/runscript.sh.in
 +++ openrc-0.11.8/sh/runscript.sh.in
 @@ -205,28 +205,33 @@ fi
@@ -230,35 +233,98 @@ Origin: upstream
  fi
  
  while [ -n "$1" ]; do
-@@ -240,7 +245,11 @@ while [ -n "$1" ]; do
+@@ -240,7 +245,12 @@ while [ -n "$1" ]; do
  		_depend
  		cd /
  		continue
 +	elif [ -n "${lsbh}" ]; then
 +		. "${RC_SERVICE}"
++		shift
 +		continue
  	fi
 +
  	# See if we have the required function and run it
  	for _cmd in describe start stop status ${extra_commands:-$opts} \
  		$extra_started_commands $extra_stopped_commands
---- openrc-0.11.8.orig/sh/gendepends.sh.in
-+++ openrc-0.11.8/sh/gendepends.sh.in
-@@ -81,10 +81,14 @@ do
+--- openrc-0.11.8.orig/src/rc/rc-misc.c
++++ openrc-0.11.8/src/rc/rc-misc.c
+@@ -191,10 +191,6 @@ env_config(void)
+ 	if (sys)
+ 		setenv("RC_SYS", sys, 1);
  
- 		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
+-#ifdef PREFIX
+-	setenv("RC_PREFIX", RC_PREFIX, 1);
+-#endif
+-
+ 	/* Some scripts may need to take a different code path if
+ 	   Linux/FreeBSD, etc
+ 	   To save on calling uname, we store it in an environment variable */
+@@ -255,12 +251,13 @@ svc_unlock(const char *applet, int fd)
+ pid_t
+ exec_service(const char *service, const char *arg)
+ {
+-	char *file, sfd[32];
++	char *file, sfd[32], bsvc[32];
+ 	int fd;
+ 	pid_t pid = -1;
+ 	sigset_t full;
+ 	sigset_t old;
+ 	struct sigaction sa;
++	FILE *fsvc;
  
--		if . "$_dir/$RC_SVCNAME"; then
--			echo "$RC_SVCNAME" >&3
--			_depend
-+		lsbh=$(lsb.pl "$RC_SERVICE")
-+		if [ -n "${lsbh}" ]; then
-+			eval "${lsbh}"
-+		else
-+			. "$_dir/$RC_SVCNAME"
- 		fi
-+		echo "$RC_SVCNAME" >&3
-+		_depend
- 		)
- 	done
- done
+ 	fd = svc_lock(basename_c(service));
+ 	if (fd == -1)
+@@ -295,10 +292,18 @@ exec_service(const char *service, const
+ 		/* Unmask signals */
+ 		sigprocmask(SIG_SETMASK, &old, NULL);
+ 
+-		/* Safe to run now */
+-		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
+-		fprintf(stderr, "unable to exec `%s': %s\n",
+-		    file, strerror(errno));
++		/* Safe to run now, to support scripts without runscript shebang
++		   we need to make a check first. */
++		fsvc = fopen(file,"r");
++		fgets(bsvc, sizeof(bsvc), fsvc);
++		if (strstr(bsvc, "runscript")) {
++			execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
++			fprintf(stderr, "unable to exec `%s': %s\n",
++			    file, strerror(errno));
++		} else {
++			execl(file, file, arg, (char *) NULL);
++		}
++
+ 		svc_unlock(basename_c(service), fd);
+ 		_exit(EXIT_FAILURE);
+ 	}
+--- openrc-0.11.8.orig/src/librc/librc.c
++++ openrc-0.11.8/src/librc/librc.c
+@@ -93,11 +93,11 @@ ls_dir(const char *dir, int options)
+ 					continue;
+ 
+ 				/* .sh files are not init scripts */
+-				l = strlen(d->d_name);
++				/*l = strlen(d->d_name);
+ 				if (l > 2 && d->d_name[l - 3] == '.' &&
+ 				    d->d_name[l - 2] == 's' &&
+ 				    d->d_name[l - 1] == 'h')
+-					continue;
++					continue;*/
+ 			}
+ 			if (options & LS_DIR) {
+ 				if (stat(d->d_name, &buf) == 0 &&
+@@ -503,12 +503,12 @@ rc_service_exists(const char *service)
+ 	len = strlen(service);
+ 
+ 	/* .sh files are not init scripts */
+-	if (len > 2 && service[len - 3] == '.' &&
++	/*if (len > 2 && service[len - 3] == '.' &&
+ 	    service[len - 2] == 's' &&
+ 	    service[len - 1] == 'h') {
+ 		errno = EINVAL;
+ 		return false;
+-	}
++	}*/
+ 
+ 	if (!(file = rc_service_resolve(service))) {
+ 		errno = ENOENT;
