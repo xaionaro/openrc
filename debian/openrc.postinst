@@ -24,4 +24,29 @@ fi
 
 #DEBHELPER#
 
+# Add already exist service
+
+echo "Add already exist service ..."
+
+for rl in '2' 'S'; do
+	if [ "${rl}" = "2" ]; then
+		orl="default"
+	else
+		orl="sysinit"
+	fi
+	for f in $(ls /etc/rc${rl}.d | egrep 'S[[:digit:]]{2}*'); do
+		svc=$(readlink -f /etc/rc${rl}.d/${f})
+		sed -i '1s;#!\s*/bin/sh.*;#!/sbin/runscript;' ${svc}
+		svc=$(basename ${svc})
+		if [ "${svc}" = "bootmisc.sh" ] || [ "${svc}" = "checkfs.sh" ] || [ "${svc}" = "hostname.sh" ] || [ "${svc}" = "hwclock.sh" ] || [ "${svc}" = "mtab.sh" ] || [ "${svc}" = "urandom" ]
+		then
+			rc-update add ${svc} boot
+		else
+			rc-update add ${svc} ${orl}
+		fi
+	done
+done
+
+echo "Complete add ..."
+
 exit 0
