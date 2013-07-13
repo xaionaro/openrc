@@ -2,17 +2,6 @@ Description: This patch adds support for the sysv-rc LSB headers
 Author: heroxbd <heroxbd@gentoo.org>
 Origin: upstream
 
---- openrc-0.11.8.orig/init.d/procfs.in
-+++ openrc-0.11.8/init.d/procfs.in
-@@ -6,7 +6,7 @@ description="Mounts misc filesystems in
- 
- depend()
- {
--	use modules devfs
-+	use modules sysfs
- 	need localmount
- 	keyword -openvz -prefix -vserver -lxc
- }
 --- openrc-0.11.8.orig/scripts/Makefile
 +++ openrc-0.11.8/scripts/Makefile
 @@ -1,5 +1,5 @@
@@ -24,7 +13,7 @@ Origin: upstream
  include ${MK}/scripts.mk
 --- /dev/null
 +++ openrc-0.11.8/scripts/lsb.pl
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,121 @@
 +#!/usr/bin/perl
 +# parse lsb header and print as in OpenRC style.
 +# base code borrowed from update-rc.d of Debian
@@ -34,17 +23,7 @@ Origin: upstream
 +
 +my $initdscript = shift;
 +my $name = basename($initdscript);
-+my %lsb2orc = (#'$remote_fs' => 'netmount',
-+	       #'$local_fs' => 'localmount',
-+	       #'mountdevsubfs' => 'devfs',
-+	       #'$syslog' => 'logger',
-+	       #'$time' => 'clock',
-+	       '$all' => '*',
-+	       #'nfs-common' => 'rpc.statd',
-+	       #'$network' => 'net',
-+	       #'mountkernfs' => 'procfs',
-+	       #'$portmap' => 'rpcbind'
-+			);
++my %lsb2orc = ('$all' => '*');
 +
 +my %vsrv;
 +open(VSERV, "</etc/insserv.conf") || die "error: unable to read /etc/insserv.conf";
@@ -248,18 +227,7 @@ Origin: upstream
  		$extra_started_commands $extra_stopped_commands
 --- openrc-0.11.8.orig/src/rc/rc-misc.c
 +++ openrc-0.11.8/src/rc/rc-misc.c
-@@ -191,10 +191,6 @@ env_config(void)
- 	if (sys)
- 		setenv("RC_SYS", sys, 1);
- 
--#ifdef PREFIX
--	setenv("RC_PREFIX", RC_PREFIX, 1);
--#endif
--
- 	/* Some scripts may need to take a different code path if
- 	   Linux/FreeBSD, etc
- 	   To save on calling uname, we store it in an environment variable */
-@@ -255,12 +251,13 @@ svc_unlock(const char *applet, int fd)
+@@ -255,12 +255,13 @@ svc_unlock(const char *applet, int fd)
  pid_t
  exec_service(const char *service, const char *arg)
  {
@@ -274,7 +242,7 @@ Origin: upstream
  
  	fd = svc_lock(basename_c(service));
  	if (fd == -1)
-@@ -295,10 +292,18 @@ exec_service(const char *service, const
+@@ -295,10 +296,18 @@ exec_service(const char *service, const
  		/* Unmask signals */
  		sigprocmask(SIG_SETMASK, &old, NULL);
  
@@ -299,32 +267,34 @@ Origin: upstream
  	}
 --- openrc-0.11.8.orig/src/librc/librc.c
 +++ openrc-0.11.8/src/librc/librc.c
-@@ -93,11 +93,11 @@ ls_dir(const char *dir, int options)
+@@ -91,13 +91,6 @@ ls_dir(const char *dir, int options)
+ 				r = stat(file, &buf);
+ 				if (r != 0)
  					continue;
- 
- 				/* .sh files are not init scripts */
+-
+-				/* .sh files are not init scripts */
 -				l = strlen(d->d_name);
-+				/*l = strlen(d->d_name);
- 				if (l > 2 && d->d_name[l - 3] == '.' &&
- 				    d->d_name[l - 2] == 's' &&
- 				    d->d_name[l - 1] == 'h')
+-				if (l > 2 && d->d_name[l - 3] == '.' &&
+-				    d->d_name[l - 2] == 's' &&
+-				    d->d_name[l - 1] == 'h')
 -					continue;
-+					continue;*/
  			}
  			if (options & LS_DIR) {
  				if (stat(d->d_name, &buf) == 0 &&
-@@ -503,12 +503,12 @@ rc_service_exists(const char *service)
- 	len = strlen(service);
- 
- 	/* .sh files are not init scripts */
--	if (len > 2 && service[len - 3] == '.' &&
-+	/*if (len > 2 && service[len - 3] == '.' &&
- 	    service[len - 2] == 's' &&
- 	    service[len - 1] == 'h') {
+@@ -499,16 +492,6 @@ rc_service_exists(const char *service)
  		errno = EINVAL;
  		return false;
+ 	}
+-
+-	len = strlen(service);
+-
+-	/* .sh files are not init scripts */
+-	if (len > 2 && service[len - 3] == '.' &&
+-	    service[len - 2] == 's' &&
+-	    service[len - 1] == 'h') {
+-		errno = EINVAL;
+-		return false;
 -	}
-+	}*/
  
  	if (!(file = rc_service_resolve(service))) {
  		errno = ENOENT;
