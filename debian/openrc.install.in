@@ -1,6 +1,6 @@
 debian/tmp/bin                /
 debian/tmp/sbin               /
-debian/tmp/libexec            /
+debian/tmp/lib/rc             /lib
 debian/tmp/etc                /
 debian/tmp/usr/share/man/man8 /usr/share/man
 debian/inittab /usr/share/openrc
