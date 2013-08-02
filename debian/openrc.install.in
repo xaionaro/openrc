@@ -6,3 +6,4 @@ debian/tmp/usr/share/man/man8 /usr/share/man
 debian/inittab /usr/share/openrc
 debian/update-rc.d /usr/sbin
 debian/invoke-rc.d /usr/sbin
+debian/transit /usr/share/openrc

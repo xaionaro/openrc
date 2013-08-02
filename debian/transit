@@ -1,0 +1,18 @@
+#!/sbin/runscript
+
+description="Call halt through OpenRC style."
+
+depend() {
+	keyword -prefix
+}
+
+start()
+{
+	if [ "$RC_REBOOT" = "YES" ]; then
+		ebegin "reboot runlevel..."
+		exec /etc/init.d/reboot stop
+	else
+		ebegin "shutdown runlevle..."
+		exec /etc/init.d/halt stop
+	fi
+}

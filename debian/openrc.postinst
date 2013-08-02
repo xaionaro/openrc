@@ -49,4 +49,9 @@ done
 
 echo "Complete add ..."
 
+if [ -e /usr/share/openrc/transit ]; then
+	cp /usr/share/openrc/transit /etc/init.d
+	rc-update add transit shutdown
+fi
+
 exit 0
