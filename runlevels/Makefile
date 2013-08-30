@@ -1,4 +1,6 @@
-BOOT=		bootmisc fsck hostname localmount \
+include ../mk/net.mk
+
+BOOT=		bootmisc fsck hostname localmount loopback \
 		root swap swapfiles sysctl urandom ${BOOT-${OS}}
 DEFAULT=	local netmount
 SHUTDOWN=	savecache ${SHUTDOWN-${OS}}
@@ -10,7 +12,7 @@ BOOTDIR=	${LEVELDIR}/boot
 DEFAULTDIR=	${LEVELDIR}/default
 SHUTDOWNDIR=	${LEVELDIR}/shutdown
 
-ifeq (${MKNET},)
+ifeq (${MKNET},yes)
 BOOT+= network staticroute
 endif
 
@@ -25,12 +27,6 @@ BOOT-${OS}=
 SHUTDOWN-${OS}=
 SYSINIT-${OS}=
 
-ifeq (${MKNET},oldnet)
-BOOT-FreeBSD+= net.lo0
-BOOT-Linux+= net.lo
-BOOT-NetBSD+= net.lo0
-endif
-
 BOOT-BSD=	hostid newsyslog savecore syslogd swap-blk
 
 # Generic BSD stuff
@@ -40,7 +36,7 @@ BOOT-FreeBSD+=	adjkerntz dumpon syscons
 
 BOOT-Linux+=	hwclock keymaps modules mtab procfs termencoding tmpfiles.setup
 SHUTDOWN-Linux=	killprocs mount-ro
-SYSINIT-Linux=	devfs dmesg sysfs
+SYSINIT-Linux=	devfs dmesg sysfs tmpfiles.dev
 
 # Generic BSD stuff
 BOOT-NetBSD+=	hostid newsyslog savecore syslogd
@@ -53,7 +49,7 @@ install:
 	if ! test -d "${SYSINITDIR}"; then \
 		${INSTALL} -d ${SYSINITDIR} || exit $$?; \
 		for x in ${SYSINIT}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${SYSINITDIR}/"$$x" || exit $$?; done \
@@ -61,7 +57,7 @@ install:
 	if ! test -d "${BOOTDIR}"; then \
 		${INSTALL} -d ${BOOTDIR} || exit $$?; \
 		for x in ${BOOT}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${BOOTDIR}/"$$x" || exit $$?; \
@@ -70,7 +66,7 @@ install:
 	if ! test -d "${DEFAULTDIR}"; then \
 		${INSTALL} -d ${DEFAULTDIR} || exit $$?; \
 		for x in ${DEFAULT}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${DEFAULTDIR}/"$$x" || exit $$?; done \
@@ -78,7 +74,7 @@ install:
 	if ! test -d "${SHUTDOWNDIR}"; then \
 		${INSTALL} -d ${SHUTDOWNDIR} || exit $$?; \
 		for x in ${SHUTDOWN}; do \
-			if test -n "${PREFIX}"; then \
+			if test "${MKPREFIX}" = yes; then \
 				grep -q "keyword .*-prefix" ${INITFILES}/"$$x" && continue; \
 			fi; \
 			ln -snf ${INITDIR}/"$$x" ${SHUTDOWNDIR}/"$$x" || exit $$?; done \

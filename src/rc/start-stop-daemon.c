@@ -110,6 +110,7 @@ extern char **environ;
 #if !defined(SYS_ioprio_set) && defined(__NR_ioprio_set)
 # define SYS_ioprio_set __NR_ioprio_set
 #endif
+#if !defined(__DragonFly__)
 static inline int ioprio_set(int which, int who, int ioprio)
 {
 #ifdef SYS_ioprio_set
@@ -118,6 +119,7 @@ static inline int ioprio_set(int which, int who, int ioprio)
 	return 0;
 #endif
 }
+#endif
 
 static void
 free_schedulelist(void)
@@ -353,8 +355,7 @@ do_stop(const char *exec, const char *const *argv,
 
 	LIST_FOREACH_SAFE(pi, pids, entries, np) {
 		if (test) {
-			if (!quiet)
-				einfo("Would send signal %d to PID %d", sig, pi->pid);
+			einfo("Would send signal %d to PID %d", sig, pi->pid);
 			nkilled++;
 		} else {
 			if (verbose)
@@ -415,7 +416,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 	}
 
 	if (pidfile) {
-		pid = get_pid(pidfile, false);
+		pid = get_pid(pidfile, quiet);
 		if (pid == -1)
 			return 0;
 	}
@@ -434,6 +435,7 @@ run_stop_schedule(const char *exec, const char *const *argv,
 				if (tkilled == 0) {
 					if (progressed)
 						printf("\n");
+					if (! quiet)
 						eerror("%s: no matching processes found", applet);
 				}
 				return tkilled;
@@ -504,10 +506,12 @@ run_stop_schedule(const char *exec, const char *const *argv,
 
 	if (progressed)
 		printf("\n");
-	if (nrunning == 1)
-		eerror("%s: %d process refused to stop", applet, nrunning);
-	else
-		eerror("%s: %d process(es) refused to stop", applet, nrunning);
+	if (! quiet) {
+		if (nrunning == 1)
+			eerror("%s: %d process refused to stop", applet, nrunning);
+		else
+			eerror("%s: %d process(es) refused to stop", applet, nrunning);
+	}
 
 	return -nrunning;
 }
@@ -1287,7 +1291,7 @@ start_stop_daemon(int argc, char **argv)
 		/* We don't redirect stdin as some daemons may need it */
 		if (background || quiet || redirect_stdout)
 			dup2(stdout_fd, STDOUT_FILENO);
-		if (background || redirect_stderr)
+		if (background || quiet || redirect_stderr)
 			dup2(stderr_fd, STDERR_FILENO);
 
 		for (i = getdtablesize() - 1; i >= 3; --i)
@@ -1318,9 +1322,11 @@ start_stop_daemon(int argc, char **argv)
 				return -1;
 			}
 		} while (!WIFEXITED(i) && !WIFSIGNALED(i));
-		if (!WIFEXITED(i) || WEXITSTATUS(i) != 0)
-			eerrorx("%s: failed to start `%s'", applet, exec);
-
+		if (!WIFEXITED(i) || WEXITSTATUS(i) != 0) {
+			if (!quiet)
+				eerrorx("%s: failed to start `%s'", applet, exec);
+			exit(EXIT_FAILURE);
+		}
 		pid = spid;
 	}
 
@@ -1354,7 +1360,7 @@ start_stop_daemon(int argc, char **argv)
 				alive = true;
 		} else {
 			if (pidfile) {
-				pid = get_pid(pidfile, false);
+				pid = get_pid(pidfile, true);
 				if (pid == -1) {
 					eerrorx("%s: did not "
 					    "create a valid"

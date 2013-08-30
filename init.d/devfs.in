@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@SBINDIR@/runscript
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -7,12 +7,13 @@ description="Mount system critical filesystems in /dev."
 depend() {
 	use dev-mount
 	before dev
-	keyword -prefix -vserver
+	keyword -prefix -vserver -lxc
 }
 
 start() {
 	# Mount required stuff as user may not have then in /etc/fstab
 	for x in \
+		"mqueue /dev/mqueue 1777 ,nodev mqueue" \
 		"devpts /dev/pts 0755 ,gid=5,mode=0620 devpts" \
 		"tmpfs /dev/shm 1777 ,nodev shm" \
 	; do

@@ -4,7 +4,7 @@
 # Released under the 2-clause BSD license.
 
 . "$RC_LIBEXECDIR"/sh/functions.sh
-[ -r /etc/rc.conf ] && . /etc/rc.conf
+[ -r "@SYSCONFDIR@/rc.conf" ] && . "@SYSCONFDIR@/rc.conf"
 
 # By default VServer already has /proc mounted, but OpenVZ does not!
 # However, some of our users have an old proc image in /proc
@@ -51,17 +51,13 @@ if [ ! -d /run ]; then
 	fi
 fi
 
-if [ -L /run/openrc ]; then
-	rm /run/openrc
-fi
-
 if [ "$sys" = VSERVER ]; then
 	rm -rf /run/*
 elif ! mountinfo -q /run; then
 	ebegin "Mounting /run"
 	rc=0
 	if ! fstabinfo --mount /run; then
-		mount -t tmpfs -o mode=0755,nosuid,nodev tmpfs /run
+		mount -t tmpfs -o mode=0755,nosuid,nodev,size=10% tmpfs /run
 		rc=$?
 	fi
 	if [ $rc != 0 ]; then

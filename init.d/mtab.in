@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@SBINDIR@/runscript
 # Copyright (c) 2007-2008 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -28,7 +28,7 @@ start()
 	# makes / readonly and dismounts all tmpfs even if in use which is
 	# not good. Luckily, umount uses /etc/mtab instead of /proc/mounts
 	# which allows this hack to work.
-	grep -v "^[^ ]* / tmpfs " /proc/mounts > /etc/mtab
+	grep -v "^[! ]* / tmpfs " /proc/mounts > /etc/mtab
 
 	# Remove stale backups
 	rm -f /etc/mtab~ /etc/mtab~~

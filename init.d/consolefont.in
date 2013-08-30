@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@SBINDIR@/runscript
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -53,14 +53,10 @@ start()
 	done
 	eend $retval
 
-	# Store the last font so we can use it ASAP on boot
+	# Store the font so we can use it ASAP on boot
 	if [ $retval -eq 0 ] && checkpath -W "$RC_LIBEXECDIR"; then
 		mkdir -p "$RC_LIBEXECDIR"/console
-		for font in /usr/share/consolefonts/"$consolefont".*; do
-			:
-		done
-		cp "$font" "$RC_LIBEXECDIR"/console
-		echo "${font##*/}" >"$RC_LIBEXECDIR"/console/font
+		setfont -O "$RC_LIBEXECDIR"/console/font
 	fi
 
 	return $retval
