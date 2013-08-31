@@ -33,6 +33,9 @@ override_dh_auto_clean:
 	dh_auto_clean
 	rm -f $(DH_INSTALL_FILES)
 
+override_dh_strip:
+	dh_strip --dbg-package=openrc-dbg
+
 install-arch: build-arch $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
 
@@ -65,4 +68,4 @@ make-orig-file:
 	[ ! -e ../build-area ] && mkdir ../build-area || true
 	[ ! -e ../build-area/$(DEBPKGNAME)_$(VERSION).orig.tar.xz ] && cp ../$(DEBPKGNAME)_$(VERSION).orig.tar.xz ../build-area || true
 
-.PHONY: override_dh_auto_clean install-arch install-indep get-upstream-sources make-orig-file
+.PHONY: override_dh_auto_clean override_dh_strip install-arch install-indep get-upstream-sources make-orig-file

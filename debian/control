@@ -20,12 +20,29 @@ Description: dependency based init system (runlevel change mechanism)
  init, for booting, changing runlevels, starting and stopping services, and
  shutting down.
  .
- Originally written as Originally written as a Gentoo project, OpenRC is 100%
- compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
- by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
- style init system historically available in Debian.
+ Originally written as a Gentoo project, OpenRC is 100% compatible
+ with Gentoo init scripts. OpenRC, however, is not exclusively used by
+ Gentoo Linux, and aims at being platform-agnostic, and supporting the
+ old style init system historically available in Debian.
  .
  This package provides the runlevel change mechanism.
+
+Package: openrc-dbg
+Architecture: any
+Section: debug
+Priority: extra
+Depends: openrc (= ${binary:Version}), ${misc:Depends}
+Description: dependency based init system (runlevel change mechanism)
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
+ shutting down.
+ .
+ Originally written as a Gentoo project, OpenRC is 100% compatible
+ with Gentoo init scripts. OpenRC, however, is not exclusively used by
+ Gentoo Linux, and aims at being platform-agnostic, and supporting the
+ old style init system historically available in Debian.
+ .
+ This package contains the debugging symbols for OpenRC.
 
 Package: librc1
 Architecture: any
