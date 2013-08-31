@@ -44,6 +44,8 @@ install-indep: build-indep $(DH_INSTALL_FILES)
 
 override_dh_installmenu:
 	rm -f $(CURDIR)/debian/openrc/sbin/start-stop-daemon
+	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/service.8
+	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/service.8.gz
 	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/start-stop-daemon.8
 	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/start-stop-daemon.8.gz
 	rm -rf $(CURDIR)/debian/openrc/etc/init.d
