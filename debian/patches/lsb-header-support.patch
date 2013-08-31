@@ -2,8 +2,8 @@ Description: This patch adds support for the sysv-rc LSB headers
 Author: heroxbd <heroxbd@gentoo.org>
 Origin: upstream
 
---- openrc-0.12.orig/scripts/Makefile
-+++ openrc-0.12/scripts/Makefile
+--- a/scripts/Makefile
++++ b/scripts/Makefile
 @@ -1,5 +1,5 @@
  DIR=	${LIBEXECDIR}/bin
 -BIN=	on_ac_power
@@ -12,7 +12,7 @@ Origin: upstream
  MK=	../mk
  include ${MK}/scripts.mk
 --- /dev/null
-+++ openrc-0.12/scripts/lsb.pl
++++ b/scripts/lsb.pl
 @@ -0,0 +1,122 @@
 +#!/usr/bin/perl
 +# parse lsb header and print as in OpenRC style.
@@ -136,9 +136,9 @@ Origin: upstream
 +if ($des) {$rst = $des . "\n" . $rst};
 +
 +print $rst
---- openrc-0.12.orig/sh/gendepends.sh.in
-+++ openrc-0.12/sh/gendepends.sh.in
-@@ -81,10 +81,14 @@
+--- a/sh/gendepends.sh.in
++++ b/sh/gendepends.sh.in
+@@ -74,10 +74,14 @@
  
  		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
  
@@ -156,8 +156,8 @@ Origin: upstream
  		)
  	done
  done
---- openrc-0.12.orig/sh/runscript.sh.in
-+++ openrc-0.12/sh/runscript.sh.in
+--- a/sh/runscript.sh.in
++++ b/sh/runscript.sh.in
 @@ -217,28 +217,33 @@
  	cgroup_set_limits
  
@@ -226,8 +226,8 @@ Origin: upstream
  	# See if we have the required function and run it
  	for _cmd in describe start stop status ${extra_commands:-$opts} \
  		$extra_started_commands $extra_stopped_commands
---- openrc-0.12.orig/src/librc/librc.c
-+++ openrc-0.12/src/librc/librc.c
+--- a/src/librc/librc.c
++++ b/src/librc/librc.c
 @@ -91,13 +91,6 @@
  				r = stat(file, &buf);
  				if (r != 0)
@@ -259,3 +259,14 @@ Origin: upstream
  
  	if (!(file = rc_service_resolve(service))) {
  		errno = ENOENT;
+--- a/src/rc/rc-misc.c
++++ b/src/rc/rc-misc.c
+@@ -296,7 +296,7 @@
+ 		sigprocmask(SIG_SETMASK, &old, NULL);
+ 
+ 		/* Safe to run now */
+-		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
++		execl("/sbin/runscript", "/sbin/runscript", file, "--lockfd", sfd, arg, (char *) NULL);
+ 		fprintf(stderr, "unable to exec `%s': %s\n",
+ 		    file, strerror(errno));
+ 		svc_unlock(basename_c(service), fd);
