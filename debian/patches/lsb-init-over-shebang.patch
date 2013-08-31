@@ -1,0 +1,16 @@
+--- a/sh/gendepends.sh.in
++++ b/sh/gendepends.sh.in
+@@ -51,13 +51,6 @@
+ 	for RC_SERVICE in *; do
+ 		[ -x "$RC_SERVICE" -a -f "$RC_SERVICE" ] || continue
+ 
+-		# Only generate dependencies for runscripts
+-		read one two three <"$RC_SERVICE"
+-		[ "$one" = "#!@SBINDIR@/runscript" ] || \
+-		[ "$one" = "#!" -a "$two" = "@SBINDIR@/runscript" ] || \
+-			continue
+-		unset one two three
+-
+ 		RC_SVCNAME=${RC_SERVICE##*/} ; export RC_SVCNAME
+ 
+ 		# Compat

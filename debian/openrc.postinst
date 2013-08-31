@@ -36,7 +36,6 @@ for rl in '2' 'S'; do
 	fi
 	for f in $(ls /etc/rc${rl}.d | egrep 'S[[:digit:]]{2}*'); do
 		svc=$(readlink -f /etc/rc${rl}.d/${f})
-		sed -i '1s;#!\s*/bin/['sh''bash'].*;#!/sbin/runscript;' ${svc}
 		svc=$(basename ${svc})
 		if [ "${svc}" = "bootmisc.sh" ] || [ "${svc}" = "checkfs.sh" ] || [ "${svc}" = "hostname.sh" ] || [ "${svc}" = "hwclock.sh" ] || [ "${svc}" = "mtab.sh" ] || [ "${svc}" = "urandom" ]
 		then
