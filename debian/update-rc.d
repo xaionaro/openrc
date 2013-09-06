@@ -207,11 +207,9 @@ sub rlconv {
 	my $runlevels = shift;
 	for my $rl (split(' ', $runlevels)){
 		if($rl =~ /^[1Ss]$/){
-			$rl = "single";
-		}elsif("0" eq $rl){
+			$rl = "sysinit";
+		}elsif("0" eq $rl "6" eq $rl){
 			$rl = "shutdown";
-		}elsif("6" eq $rl){
-			$rl = "reboot";
 		}else{
 			$is_default++;
 			if($is_default == 1){
