@@ -270,3 +270,20 @@ Origin: upstream
  		fprintf(stderr, "unable to exec `%s': %s\n",
  		    file, strerror(errno));
  		svc_unlock(basename_c(service), fd);
+--- a/src/librc/librc-depend.c
++++ b/src/librc/librc-depend.c
+@@ -817,14 +817,6 @@
+ 			    strcmp(depend, service) == 0)
+ 				continue;
+ 
+-			/* .sh files are not init scripts */
+-			l = strlen(depend);
+-			if (l > 2 &&
+-			    depend[l - 3] == '.' &&
+-			    depend[l - 2] == 's' &&
+-			    depend[l - 1] == 'h')
+-				continue;
+-
+ 			/* Remove our dependency if instructed */
+ 			if (depend[0] == '!') {
+ 				rc_stringlist_delete(deptype->services, depend + 1);
