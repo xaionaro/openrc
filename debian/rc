@@ -1,0 +1,37 @@
+#!/bin/sh
+# OpenRC boots with standard inttab
+# Bill Wang <freecnpro@gmail.com>
+
+### BEGIN INIT INFO
+# Provides:          /etc/init.d/rc
+# Required-Start:    
+# Required-Stop:     
+# X-Start-Before:    
+# X-Stop-After:      
+# Default-Start:     
+# Default-Stop:      
+# Short-Description: This is a false service.
+# Description:       This is a false service, OpenRC boots with standard inittab.
+### END INIT INFO
+
+set -e
+
+# Transform runlevel to OpenRC style
+
+case $1 in
+	0 )
+		runlevel="shutdown"
+		;;
+	1 )
+		runlevel="single"
+		;;
+	6 )
+		runlevel="reboot"
+		;;
+	* )
+		runlevel="default"
+		;;
+esac
+
+# With OpenRC to change runlevel
+exec /sbin/rc $runlevel
