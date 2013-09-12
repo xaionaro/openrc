@@ -37,12 +37,7 @@ for rl in '2' 'S'; do
 	for f in $(ls /etc/rc${rl}.d | egrep 'S[[:digit:]]{2}*'); do
 		svc=$(readlink -f /etc/rc${rl}.d/${f})
 		svc=$(basename ${svc})
-		if [ "${svc}" = "bootmisc.sh" ] || [ "${svc}" = "checkfs.sh" ] || [ "${svc}" = "hostname.sh" ] || [ "${svc}" = "hwclock.sh" ] || [ "${svc}" = "mtab.sh" ] || [ "${svc}" = "urandom" ]
-		then
-			rc-update add ${svc} boot
-		else
-			rc-update add ${svc} ${orl}
-		fi
+		rc-update add ${svc} ${orl}
 	done
 done
 
