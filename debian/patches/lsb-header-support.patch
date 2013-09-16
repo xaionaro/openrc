@@ -13,7 +13,7 @@ Origin: upstream
  include ${MK}/scripts.mk
 --- /dev/null
 +++ b/scripts/lsb.pl
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,128 @@
 +#!/usr/bin/perl
 +# parse lsb header and print as in OpenRC style.
 +# base code borrowed from update-rc.d of Debian
@@ -23,7 +23,13 @@ Origin: upstream
 +
 +my $initdscript = shift;
 +my $name = basename($initdscript);
-+my %lsb2orc = ('$all' => '*');
++my %lsb2orc = ('$all' => '*',
++			   '$local_fs' => 'mountall mountall-bootclean umountfs',
++			   '$remote_fs' => 'mountnfs mountnfs-bootclean umountnfs sendsigs',
++			   '$network' => 'networking ifupdown',
++			   '$syslog' => 'syslog ',
++			   '$time' => 'hwclock',
++			   '$portmap' => 'rpcbind');
 +
 +my %vsrv;
 +open(VSERV, "</etc/insserv.conf") || die "error: unable to read /etc/insserv.conf";
