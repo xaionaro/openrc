@@ -36,4 +36,6 @@ if [ -e /usr/share/openrc/rcS ]; then
 	cp /usr/share/openrc/rcS /etc/init.d
 fi
 
+#DEBHELPER#
+
 exit 0
