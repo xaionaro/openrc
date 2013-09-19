@@ -25,10 +25,7 @@ EOF
 	exit (1);
 }
 
-if ( ! -f "/etc/init.d/.legacy-bootordering" ) {
-    info("using dependency based boot sequencing");
-    exit openrc_updatercd(@ARGV);
-}
+exit openrc_updatercd(@ARGV);
 
 sub info {
     print STDOUT "update-rc.d: @_\n";
@@ -208,7 +205,7 @@ sub rlconv {
 	for my $rl (split(' ', $runlevels)){
 		if($rl =~ /^[1Ss]$/){
 			$rl = "sysinit";
-		}elsif("0" eq $rl "6" eq $rl){
+		}elsif("0" eq $rl or "6" eq $rl){
 			$rl = "shutdown";
 		}else{
 			$is_default++;
