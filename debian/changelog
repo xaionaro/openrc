@@ -1,9 +1,3 @@
-openrc (0.12-2) experimental; urgency=low
-
-  * Fixes update-rc.d script which had a parse error.
-
- -- Thomas Goirand <zigo@debian.org>  Thu, 19 Sep 2013 16:00:05 +0000
-
 openrc (0.12-1) experimental; urgency=low
 
   * Initial release (Closes: 684396).
