@@ -30,9 +30,8 @@ Description: dependency based init system (runlevel change mechanism)
 Package: openrc-dbg
 Architecture: any
 Section: debug
-Priority: extra
 Depends: openrc (= ${binary:Version}), ${misc:Depends}
-Description: dependency based init system (runlevel change mechanism)
+Description: dependency based init system (runlevel change mechanism) - debug
  OpenRC is a dependency based init system. It provides support for System V
  init, for booting, changing runlevels, starting and stopping services, and
  shutting down.
