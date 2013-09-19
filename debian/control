@@ -60,7 +60,8 @@ Description: dependency based init system (runtime library)
 
 Package: librc-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Section: libdevel
+Depends: ${shlibs:Depends}, ${misc:Depends}, librc1 (=${binary:Version})
 Description: dependency based init system (runtime development)
  OpenRC is a dependency based init system. It provides support for System V
  init, for booting, changing runlevels, starting and stopping services, and
@@ -90,7 +91,8 @@ Description: dependency based init system (pretty console display library)
 
 Package: libeinfo-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Section: libdevel
+Depends: ${shlibs:Depends}, ${misc:Depends}, libeinfo1 (=${binary:Version})
 Description: dependency based init system (pretty control display development)
  OpenRC is a dependency based init system. It provides support for System V
  init, for booting, changing runlevels, starting and stopping services, and
