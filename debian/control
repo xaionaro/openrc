@@ -14,7 +14,7 @@ Architecture: any
 Conflicts: sysv-rc
 Replaces: sysv-rc
 Provides: sysv-rc
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: libswitch-perl, ${shlibs:Depends}, ${misc:Depends}
 Description: dependency based init system (runlevel change mechanism)
  OpenRC is a dependency based init system. It provides support for System V
  init, for booting, changing runlevels, starting and stopping services, and
