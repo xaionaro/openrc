@@ -1,2 +1,3 @@
 lsb-init-over-shebang.patch
 lsb-header-support.patch
+kFreeBSD-support.patch
