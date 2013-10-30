@@ -37,22 +37,18 @@ index 0000000..72fea3e
 +LIBKVM?=
 +include ${MK}/os-BSD.mk
 diff --git a/mk/os.mk b/mk/os.mk
-index 3e18962..e87b962 100644
+index 3e18962..6b2d428 100644
 --- a/mk/os.mk
 +++ b/mk/os.mk
-@@ -3,8 +3,11 @@
+@@ -3,7 +3,7 @@
  
  # Generic definitions
  
 -_OS_SH=		uname -s
-+_OS_SH:=		uname -s
++_OS_SH=		uname -s | tr '/' '-'
  _OS:= 		$(shell ${_OS_SH})
-+ifeq (${_OS},GNU/kFreeBSD)
-+	_OS= GNU-kFreeBSD
-+endif
  OS?= 		${_OS}
  include ${MK}/os-${OS}.mk
- include ${MK}/os-prefix.mk
 diff --git a/src/librc/librc-daemon.c b/src/librc/librc-daemon.c
 index 6e7d57f..e98b02c 100644
 --- a/src/librc/librc-daemon.c
