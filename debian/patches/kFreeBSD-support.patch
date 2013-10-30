@@ -6,10 +6,10 @@ Date: 2013-10-29
 
 diff --git a/etc/rc.conf.GNU-kFreeBSD b/etc/rc.conf.GNU-kFreeBSD
 new file mode 100644
-index 0000000..e138e3a
+index 0000000..67fe2ae
 --- /dev/null
 +++ b/etc/rc.conf.GNU-kFreeBSD
-@@ -0,0 +1,12 @@
+@@ -0,0 +1,11 @@
 +##############################################################################
 +# GNU/kFreeBSD SPECIFIC OPTIONS
 +
@@ -21,10 +21,9 @@ index 0000000..e138e3a
 +# This should be set to the value representing the environment this file is
 +# PRESENTLY in, not the virtualization the environment is capable of.
 +#rc_sys=""
-+
 diff --git a/mk/os-GNU-kFreeBSD.mk b/mk/os-GNU-kFreeBSD.mk
 new file mode 100644
-index 0000000..9fc9313
+index 0000000..72fea3e
 --- /dev/null
 +++ b/mk/os-GNU-kFreeBSD.mk
 @@ -0,0 +1,9 @@
@@ -33,25 +32,29 @@ index 0000000..9fc9313
 +
 +# Generic definitions
 +
-+CPPFLAGS+=     -D_BSD_SOURCE -D_XOPEN_SOURCE=700
-+LIBDL=         -Wl,-Bdynamic -ldl
++CPPFLAGS+=	-D_BSD_SOURCE -D_XOPEN_SOURCE=700
++LIBDL=		-Wl,-Bdynamic -ldl
 +LIBKVM?=
 +include ${MK}/os-BSD.mk
 diff --git a/mk/os.mk b/mk/os.mk
-index 3e18962..6b2d428 100644
+index 3e18962..e87b962 100644
 --- a/mk/os.mk
 +++ b/mk/os.mk
-@@ -3,7 +3,7 @@
+@@ -3,8 +3,11 @@
  
  # Generic definitions
  
 -_OS_SH=		uname -s
-+_OS_SH=		uname -s | tr '/' '-'
++_OS_SH:=		uname -s
  _OS:= 		$(shell ${_OS_SH})
++ifeq (${_OS},GNU/kFreeBSD)
++	_OS= GNU-kFreeBSD
++endif
  OS?= 		${_OS}
  include ${MK}/os-${OS}.mk
+ include ${MK}/os-prefix.mk
 diff --git a/src/librc/librc-daemon.c b/src/librc/librc-daemon.c
-index 982da35..7a860c6 100644
+index 6e7d57f..e98b02c 100644
 --- a/src/librc/librc-daemon.c
 +++ b/src/librc/librc-daemon.c
 @@ -30,7 +30,7 @@
@@ -64,7 +67,7 @@ index 982da35..7a860c6 100644
  pid_is_exec(pid_t pid, const char *exec)
  {
 diff --git a/src/rc/mountinfo.c b/src/rc/mountinfo.c
-index eaace13..1006a0c 100644
+index 43d9c83..ce3f27d 100644
 --- a/src/rc/mountinfo.c
 +++ b/src/rc/mountinfo.c
 @@ -39,7 +39,7 @@
@@ -99,7 +102,7 @@ index 468225f..e8fb0ff 100644
  #elif defined(__NetBSD__) || defined(__OpenBSD__)
  #  include <util.h>
 diff --git a/src/rc/runscript.c b/src/rc/runscript.c
-index e504e4a..f14db11 100644
+index 3ecb6b5..7dc7593 100644
 --- a/src/rc/runscript.c
 +++ b/src/rc/runscript.c
 @@ -52,7 +52,7 @@
@@ -111,3 +114,5 @@ index e504e4a..f14db11 100644
  #  include <pty.h>
  #elif defined(__NetBSD__) || defined(__OpenBSD__)
  #  include <util.h>
+-- 
+1.8.3.2
