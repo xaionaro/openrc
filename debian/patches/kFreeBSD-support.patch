@@ -27,17 +27,16 @@ new file mode 100644
 index 0000000..9fc9313
 --- /dev/null
 +++ b/mk/os-GNU-kFreeBSD.mk
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,9 @@
 +# Copyright (c) 2008 Roy Marples <roy@marples.name>
 +# Released under the 2-clause BSD license.
 +
 +# Generic definitions
 +
-+PKG_PREFIX?=	/usr/local
-+SFX=		.BSD.in
-+
-+CPPFLAGS+=	-D_BSD_SOURCE -D_XOPEN_SOURCE=700
-+LIBDL=		-Wl,-Bdynamic -ldl
++CPPFLAGS+=     -D_BSD_SOURCE -D_XOPEN_SOURCE=700
++LIBDL=         -Wl,-Bdynamic -ldl
++LIBKVM?=
++include ${MK}/os-BSD.mk
 diff --git a/mk/os.mk b/mk/os.mk
 index 3e18962..6b2d428 100644
 --- a/mk/os.mk
