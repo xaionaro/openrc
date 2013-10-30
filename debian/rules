@@ -21,7 +21,7 @@ export LIBDIR = /usr/lib/$(DEB_HOST_MULTIARCH)
 export SHLIBDIR = /lib/$(DEB_HOST_MULTIARCH)
 export LIBNAME = lib
 export LIBEXECDIR = /lib/rc
-export OS = Linux
+#export OS = Linux
 
 %:
 	dh $@
