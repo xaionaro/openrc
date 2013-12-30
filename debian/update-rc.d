@@ -1,9 +1,7 @@
 #! /usr/bin/perl
 #
 # update-rc.d to support OpenRC.
-# base code borrowed from update-rc.d of Debian.
-# Written by Bill Wang (freecnpro@gmail.com)
-#
+# modified from update-rc.d of Debian by Bill Wang <freecnpro@gmail.com>
 
 use strict;
 use warnings;
