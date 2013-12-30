@@ -1,0 +1,25 @@
+#!/bin/sh
+# Wrapper of OpenRC called from inittab
+### BEGIN INIT INFO
+# Short-Description:	a hack to prevent to be sourced
+### END INIT INFO
+
+set -e
+
+# map numbered to named runlevel
+case $1 in
+	0 )
+		runlevel="shutdown"
+		;;
+	1 )
+		runlevel="single"
+		;;
+	6 )
+		runlevel="reboot"
+		;;
+	* )
+		runlevel="default"
+		;;
+esac
+
+exec /sbin/openrc $runlevel

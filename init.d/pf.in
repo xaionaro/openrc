@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -17,7 +17,7 @@ depend() {
 start()
 {
 	ebegin "Starting $name"
-	if type kldload >/dev/null 2>&1; then
+	if command -v kldload >/dev/null 2>&1; then
 		kldload pf 2>/dev/null
 	fi
 	pfctl -q -F all

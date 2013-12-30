@@ -4,6 +4,7 @@ description="Call halt through OpenRC style."
 
 depend() {
 	keyword -prefix
+	after *
 }
 
 start()

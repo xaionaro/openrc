@@ -21,7 +21,7 @@ export LIBDIR = /usr/lib/$(DEB_HOST_MULTIARCH)
 export SHLIBDIR = /lib/$(DEB_HOST_MULTIARCH)
 export LIBNAME = lib
 export LIBEXECDIR = /lib/rc
-export OS = Linux
+#export OS = Linux
 
 %:
 	dh $@
@@ -43,16 +43,21 @@ install-indep: build-indep $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
 
 override_dh_installmenu:
-	rm -f $(CURDIR)/debian/openrc/sbin/start-stop-daemon
-	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/service.8
-	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/service.8.gz
-	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/start-stop-daemon.8
-	rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/start-stop-daemon.8.gz
-	rm -rf $(CURDIR)/debian/openrc/etc/init.d
-	rm -f $(CURDIR)/debian/openrc/etc/runlevels/boot/*
-	rm -f $(CURDIR)/debian/openrc/etc/runlevels/default/*
-	rm -f $(CURDIR)/debian/openrc/etc/runlevels/shutdown/*
-	rm -f $(CURDIR)/debian/openrc/etc/runlevels/sysinit/*
+	for file in start-stop-daemon runscript rc; do \
+		rm -f $(CURDIR)/debian/openrc/sbin/$${file} ; \
+	done
+
+	for file in service.8 service.8.gz start-stop-daemon.8 start-stop-daemon.8.gz ; do \
+		rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/$${file} ; \
+	done
+
+	rm -f $(CURDIR)/debian/openrc/etc/conf.d/*
+	find $(CURDIR)/debian/openrc/etc/init.d/* -name savecache -prune -o -exec rm -f {} +
+	find $(CURDIR)/debian/openrc/etc/runlevels/shutdown/* -name savecache -prune -o -exec rm -f {} +
+
+	for dir in boot default sysinit ; do \
+		rm -f $(CURDIR)/debian/openrc/etc/runlevels/$${dir}/* ; \
+	done
 
 get-upstream-sources:
 	git remote add upstream git://git.overlays.gentoo.org/proj/openrc.git || true
