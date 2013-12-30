@@ -62,7 +62,7 @@ add(const char *runlevel, const char *service)
 			eerror("%s: service `%s' does not exist",
 			    applet, service);
 	} else if (rc_service_in_runlevel(service, runlevel)) {
-		ewarn("%s: %s already installed in runlevel `%s'; skipping",
+		einfo("%s: %s already installed in runlevel `%s'; skipping",
 		    applet, service, runlevel);
 		retval = 0;
 	} else if (rc_service_add(runlevel, service)) {
@@ -195,10 +195,10 @@ show(RC_STRINGLIST *runlevels, bool verbose)
 }
 
 #include "_usage.h"
-#define usagestring ""							      \
-	"Usage: rc-update [options] add service <runlevel>\n"		      \
-	"       rc-update [options] del service <runlevel>\n"		      \
-	"       rc-update [options] show"
+#define usagestring ""							\
+	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+	"   or: rc-update [options] [show [<runlevel>...]]"
 #define getoptstring "su" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "stack",           0, NULL, 's' },

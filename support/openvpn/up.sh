@@ -45,7 +45,7 @@ if [ -n "${NS}" ]; then
 		DNS="${DNS}domain ${DOMAIN}\n"
 	fi
 	DNS="${DNS}${NS}"
-	if type resolvconf >/dev/null 2>&1; then
+	if command -v resolvconf >/dev/null 2>&1; then
 		printf "${DNS}" | resolvconf -a "${dev}"
 	else
 		# Preserve the existing resolv.conf
@@ -64,7 +64,8 @@ fi
 # Re-enter the init script to start any dependant services
 if [ -x "${RC_SERVICE}" ]; then
 	if ! "${RC_SERVICE}" --quiet status; then
-		export IN_BACKGROUND=true
+		IN_BACKGROUND=YES
+		export IN_BACKGROUND
 		"${RC_SERVICE}" --quiet start
 	fi
 fi

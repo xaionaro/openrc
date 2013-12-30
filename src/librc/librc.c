@@ -168,7 +168,7 @@ file_regex(const char *file, const char *regex)
 	char *line = NULL;
 	size_t len = 0;
 	regex_t re;
-	bool retval = false;
+	bool retval = true;
 	int result;
 
 	if (!(fp = fopen(file, "r")))
@@ -184,11 +184,21 @@ file_regex(const char *file, const char *regex)
 	}
 
 	while ((rc_getline(&line, &len, fp))) {
-		if (regexec(&re, line, 0, NULL, 0) == 0)
-			retval = true;
-		if (retval)
-			break;
+		char *str = line;
+		/* some /proc files have \0 separated content so we have to
+		   loop through the 'line' */
+		do {
+			if (regexec(&re, str, 0, NULL, 0) == 0)
+				goto found;
+			str += strlen(str) + 1;
+			/* len is the size of allocated buffer and we don't
+			   want call regexec BUFSIZE times. find next str */
+			while (str < line + len && *str == '\0')
+				str++;
+		} while (str < line + len);
 	}
+	retval = false;
+found:
 	fclose(fp);
 	free(line);
 	regfree(&re);
@@ -313,6 +323,42 @@ rc_parse_service_state(RC_SERVICE state)
 	return NULL;
 }
 
+/* Returns a list of all the chained runlevels used by the
+ * specified runlevel in dependency order, including the
+ * specified runlevel. */
+static void
+get_runlevel_chain(const char *runlevel, RC_STRINGLIST *level_list)
+{
+	char path[PATH_MAX];
+	RC_STRINGLIST *dirs;
+	RC_STRING *d, *dn;
+
+	/*
+	 * If we haven't been passed a runlevel or a level list, or
+	 * if the passed runlevel doesn't exist then we're done already!
+	 */
+	if (!runlevel || !level_list || !rc_runlevel_exists(runlevel))
+		return;
+
+	/*
+	 * We want to add this runlevel to the list but if
+	 * it is already in the list it needs to go at the
+	 * end again.
+	 */
+	if (rc_stringlist_find(level_list, runlevel))
+		rc_stringlist_delete(level_list, runlevel);
+	rc_stringlist_add(level_list, runlevel);
+
+	/*
+	 * We can now do exactly the above procedure for our chained
+	 * runlevels.
+	 */
+	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
+	dirs = ls_dir(path, LS_DIR);
+	TAILQ_FOREACH_SAFE(d, dirs, entries, dn)
+		get_runlevel_chain(d->value, level_list);
+}
+
 bool
 rc_runlevel_starting(void)
 {
@@ -379,7 +425,7 @@ rc_runlevel_exists(const char *runlevel)
 	char path[PATH_MAX];
 	struct stat buf;
 
-	if (!runlevel)
+	if (!runlevel || strcmp(runlevel, ".") == 0 || strcmp(runlevel, "..") == 0)
 		return false;
 	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
 	if (stat(path, &buf) == 0 && S_ISDIR(buf.st_mode))
@@ -414,22 +460,10 @@ librc_hidden_def(rc_runlevel_unstack)
 RC_STRINGLIST *
 rc_runlevel_stacks(const char *runlevel)
 {
-	char path[PATH_MAX];
-	RC_STRINGLIST *dirs;
-	RC_STRING *d, *dn;
-
-	if (!runlevel)
-		return false;
-	snprintf(path, sizeof(path), "%s/%s", RC_RUNLEVELDIR, runlevel);
-	dirs = ls_dir(path, LS_DIR);
-	TAILQ_FOREACH_SAFE(d, dirs, entries, dn) {
-		if (!rc_runlevel_exists(d->value)) {
-			TAILQ_REMOVE(dirs, d, entries);
-			free(d->value);
-			free(d);
-		}
-	}
-	return dirs;
+	RC_STRINGLIST *stack;
+	stack = rc_stringlist_new();
+	get_runlevel_chain(runlevel, stack);
+	return stack;
 }
 librc_hidden_def(rc_runlevel_stacks)
 
@@ -893,16 +927,12 @@ rc_services_in_runlevel_stacked(const char *runlevel)
 	stacks = rc_runlevel_stacks(runlevel);
 	TAILQ_FOREACH(stack, stacks, entries) {
 		sl = rc_services_in_runlevel(stack->value);
-		if (list != NULL) {
-			TAILQ_CONCAT(list, sl, entries);
-			free(sl);
-		} else
-			list = sl;
+		TAILQ_CONCAT(list, sl, entries);
+		free(sl);
 	}
 	return list;
 }
 librc_hidden_def(rc_services_in_runlevel_stacked)
-
 
 RC_STRINGLIST *
 rc_services_in_state(RC_SERVICE state)

@@ -15,6 +15,17 @@
 
 DRYRUN=0
 
+checkprefix() {
+	n=$1
+	shift
+	for x in $@; do
+		case $n in
+			${x}*) return 0 ;;
+	esac
+	done
+	return 1
+}
+
 warninvalid() {
 	printf "tmpfiles: ignoring invalid entry on line %d of \`%s'\n" "$LINENUM" "$FILE"
 	error=$(( error+1 ))
@@ -43,13 +54,19 @@ relabel() {
 _b() {
 	# Create a block device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && dryrun_or_real mknod $path b ${arg%:*} ${arg#*:}
+	if [ ! -e "$path" ]; then
+		dryrun_or_real mknod -m $mode $path b ${arg%:*} ${arg#*:}
+		dryrun_or_real chown $uid:$gid $path
+	fi
 }
 
 _c() {
 	# Create a character device node if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && dryrun_or_real mknod $path c ${arg%:*} ${arg#*:}
+	if [ ! -e "$path" ]; then
+		dryrun_or_real mknod -m $mode $path c ${arg%:*} ${arg#*:}
+		dryrun_or_real chown $uid:$gid $path
+	fi
 }
 
 
@@ -102,7 +119,7 @@ _D() {
 _L() {
 	# Create a symlink if it doesn't exist yet
 	local path=$1 mode=$2 uid=$3 gid=$4 age=$5 arg=$6
-	[ ! -e "$path" ] && dryrun_or_real ln -s "$args" "$path"
+	[ ! -e "$path" ] && dryrun_or_real ln -s "$arg" "$path"
 }
 
 _p() {
@@ -122,6 +139,16 @@ _x() {
 	# controlled with the Age parameter. Note that lines of this type do not
 	# influence the effect of r or R lines. Lines of this type accept shell-style
 	# globs in place of of normal path names.
+	:
+	# XXX: we don't implement this
+}
+
+_X() {
+	# Ignore a path during cleanup. Use this type to prevent path
+	# removal as controled with the age parameter. Note that if path is
+	# a directory, the content of the directory is not excluded from
+	# clean-up, only the directory itself.
+	# Lines of this type accept shell-style globs in place of normal path names.
 	:
 	# XXX: we don't implement this
 }
@@ -188,6 +215,8 @@ _Z() {
 }
 
 CREATE=0 REMOVE=0 CLEAN=0 VERBOSE=0 DRYRUN=0 error=0 LINENO=0
+EXCLUDE=
+PREFIX=
 FILE=
 fragments=
 # XXX: The harcoding of /usr/lib/ is an explicit choice by upstream
@@ -205,7 +234,7 @@ for d in ${tmpfiles_dirs} ; do
 		[ -f $f ] && tmpfiles_basenames="${tmpfiles_basenames}\n${f##*/}"
 	done # for f in ${d}
 done # for d in ${tmpfiles_dirs}
-tmpfiles_basenames="`printf "${tmpfiles_basenames}\n" | sort | uniq`"
+tmpfiles_basenames="$(printf "${tmpfiles_basenames}\n" | sort -u )"
 
 for b in $tmpfiles_basenames ; do
 	real_f=''
@@ -223,6 +252,8 @@ while [ $# -gt 0 ]; do
 		--clean) CLEAN=1 ;; # TODO: Not implemented
 		--verbose) VERBOSE=1 ;;
 		--dryrun|--dry-run) DRYRUN=1 ;;
+		--exclude-prefix=*) EXCLUDE="${EXCLUDE}${1##--exclude-prefix=} " ;;
+		--prefix=*) PREFIX="${PREFIX}${1##--prefix=} " ;;
 	esac
 	shift
 done
@@ -233,7 +264,7 @@ if [ $(( CLEAN )) -eq 1 ] ; then
 fi
 
 if [ "$CREATE$REMOVE" = '00' ]; then
-	printf 'usage: %s [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
+	printf 'usage: %s [--exclude-prefix=path] [--prefix=path] [--create] [--remove] [--clean] [--verbose] [--dry-run]\n' "${0##*/}"
 	exit 1
 fi
 
@@ -263,7 +294,7 @@ for FILE in $tmpfiles_d ; do
 
 		# whine about invalid entries
 		case $cmd in
-			f|F|w|d|D|p|L|c|b|x|r|R|z|Z) ;;
+			f|F|w|d|D|p|L|c|b|x|X|r|R|z|Z) ;;
 			\#) continue ;;
 			*) warninvalid ; continue ;;
 		esac
@@ -283,6 +314,8 @@ for FILE in $tmpfiles_d ; do
 		[ "$arg" = '-' -o "$arg" = '' ] && arg=''
 		set -- "$path" "$mode" "$uid" "$gid" "$age" "$arg"
 
+		[ -n "$EXCLUDE" ] && checkprefix $path $EXCLUDE && continue
+		[ -n "$PREFIX" ] && ! checkprefix $path $PREFIX && continue
 		[ "$VERBOSE" -eq "1" ] && echo _$cmd "$@"
 		_$cmd "$@"
 		rc=$?

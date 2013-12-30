@@ -150,11 +150,11 @@ static bool term_is_cons25 = false;
 static char termcapbuf[2048];
 static char tcapbuf[512];
 #else
-/* No curses support, so we hardcode a list of colour capable terms */
+/* No curses support, so we hardcode a list of colour capable terms
+ * Only terminals without "color" in the name need to be explicitly listed */
 static const char *const color_terms[] = {
 	"Eterm",
 	"ansi",
-	"color-xterm",
 	"con132x25",
 	"con132x30",
 	"con132x43",
@@ -174,7 +174,6 @@ static const char *const color_terms[] = {
 	"kterm",
 	"linux",
 	"linux-c",
-	"mach-color",
 	"mlterm",
 	"putty",
 	"rxvt",
@@ -189,8 +188,6 @@ static const char *const color_terms[] = {
 	"vt220",
 	"wsvt25",
 	"xterm",
-	"xterm-256color",
-	"xterm-color",
 	"xterm-debian",
 	NULL
 };
@@ -274,6 +271,12 @@ static bool
 is_quiet(void)
 {
 	return yesno(getenv("EINFO_QUIET"));
+}
+
+static bool
+is_really_quiet(void)
+{
+	return yesno(getenv("EERROR_QUIET"));
 }
 
 static bool
@@ -402,7 +405,10 @@ colour_terminal(FILE * EINFO_RESTRICT f)
 	 * which is not available to us when we boot */
 	if (term_is_cons25 || strcmp(term, "wsvt25") == 0) {
 #else
-		while (color_terms[i]) {
+		if (strstr(term, "color"))
+			in_colour = 1;
+
+		while (color_terms[i] && in_colour != 1) {
 			if (strcmp(color_terms[i], term) == 0) {
 				in_colour = 1;
 			}
@@ -674,6 +680,8 @@ eerrorn(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
+	if (!fmt || is_really_quiet())
+		return 0;
 	va_start(ap, fmt);
 	retval = _eerrorvn(fmt, ap);
 	va_end(ap);
@@ -705,7 +713,7 @@ ewarn(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (!fmt)
+	if (!fmt || is_quiet())
 		return 0;
 	va_start(ap, fmt);
 	elogv(LOG_WARNING, fmt, ap);
@@ -740,7 +748,7 @@ eerror(const char *EINFO_RESTRICT fmt, ...)
 	int retval;
 	va_list ap;
 
-	if (!fmt)
+	if (!fmt || is_really_quiet())
 		return 0;
 	va_start(ap, fmt);
 	elogv(LOG_ERR, fmt, ap);
@@ -757,7 +765,7 @@ eerrorx(const char *EINFO_RESTRICT fmt, ...)
 {
 	va_list ap;
 
-	if (fmt) {
+	if (fmt && !is_really_quiet()) {
 		va_start(ap, fmt);
 		elogv(LOG_ERR, fmt, ap);
 		_eerrorvn(fmt, ap);

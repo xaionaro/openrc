@@ -1,4 +1,4 @@
-#!@PREFIX@/sbin/runscript
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -15,7 +15,7 @@ start()
 	local ret=0
 
 	# Flush all pending disk writes now
-	sync; sync
+	sync
 
 	ebegin "Remounting remaining filesystems read-only"
 	# We need the do_unmount function

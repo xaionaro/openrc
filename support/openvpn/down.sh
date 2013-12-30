@@ -6,7 +6,7 @@
 [ -x "${RC_SVCNAME}"-down.sh ] && "${RC_SVCNAME}"-down.sh
 
 # Restore resolv.conf to how it was
-if type resolvconf >/dev/null 2>&1; then
+if command -v resolvconf >/dev/null 2>&1; then
 	resolvconf -d "${dev}"
 elif [ -e /etc/resolv.conf-"${dev}".sv ]; then
 	# Important that we copy instead of move incase resolv.conf is
@@ -18,7 +18,8 @@ fi
 # Re-enter the init script to stop any dependant services
 if [ -x "${RC_SERVICE}" ]; then
 	if "${RC_SERVICE}" --quiet status; then
-		export IN_BACKGROUND=YES
+		IN_BACKGROUND=YES
+		export IN_BACKGROUND
 		"${RC_SERVICE}" --quiet stop
 	fi
 fi

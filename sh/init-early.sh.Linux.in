@@ -7,7 +7,7 @@
 
 service_present()
 {
-	local p="/etc/runlevels/$1/$2"
+	local p="@SYSCONFDIR@/runlevels/$1/$2"
 	# fail if the file doesn't exist
 	[ ! -e "$p" ] && return 1
 	# succeed if $RC_SYS empty, can't check further, assume script will run
@@ -30,10 +30,10 @@ fi
 if service_present "$RC_DEFAULTLEVEL" consolefont ||
    service_present "$RC_BOOTLEVEL" consolefont; then
 	printf "\033%s" "$termencoding" >"$CONSOLE" 2>/dev/null
-	if [ -r "$RC_LIBEXECDIR"/console/font -a -x /usr/bin/setfont ]; then
-		font="$(cat "$RC_LIBEXECDIR"/console/font)"
+	if [ -r "$RC_LIBEXECDIR"/console/font ] && \
+		command -v setfont > /dev/null 2>&1; then
 		[ -c "$CONSOLE" ] && cons="-C $CONSOLE"
-		setfont $cons "$RC_LIBEXECDIR"/console/"$font" 2>/dev/null
+		setfont $cons "$RC_LIBEXECDIR"/console/font 2>/dev/null
 	fi
 fi
 
