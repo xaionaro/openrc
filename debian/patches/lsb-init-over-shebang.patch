@@ -1,18 +1,20 @@
-Description: Removes the need of #!/bin/runscript in sh/gendepends.sh.in
-Author: Benda Xu <freecnpro@gmail.com>
+Description: Removes the need of openrc shebang in sh/gendepends.sh.in
+Author: Benda Xu <heroxbd@gentoo.org>
 Forwarded: not-needed
-Date: 2013-08-31
+Date: 2013-12-30
 
 --- a/sh/gendepends.sh.in
 +++ b/sh/gendepends.sh.in
-@@ -51,13 +51,6 @@
+@@ -51,15 +51,6 @@
  	for RC_SERVICE in *; do
  		[ -x "$RC_SERVICE" -a -f "$RC_SERVICE" ] || continue
  
--		# Only generate dependencies for runscripts
+-		# Only generate dependencies for OpenRC scripts
 -		read one two three <"$RC_SERVICE"
 -		[ "$one" = "#!@SBINDIR@/runscript" ] || \
+-		[ "$one" = "#!@SBINDIR@/openrc-run" ] || \
 -		[ "$one" = "#!" -a "$two" = "@SBINDIR@/runscript" ] || \
+-		[ "$one" = "#!" -a "$two" = "@SBINDIR@/openrc-run" ] || \
 -			continue
 -		unset one two three
 -
