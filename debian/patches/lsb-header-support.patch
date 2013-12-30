@@ -13,7 +13,7 @@ Origin: upstream
  include ${MK}/scripts.mk
 --- /dev/null
 +++ b/scripts/lsb.pl
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,128 @@
 +#!/usr/bin/perl
 +# parse lsb header and print as in OpenRC style.
 +# base code borrowed from update-rc.d of Debian
@@ -23,7 +23,13 @@ Origin: upstream
 +
 +my $initdscript = shift;
 +my $name = basename($initdscript);
-+my %lsb2orc = ('$all' => '*');
++my %lsb2orc = ('$all' => '*',
++			   '$local_fs' => 'mountall mountall-bootclean umountfs',
++			   '$remote_fs' => 'mountnfs mountnfs-bootclean umountnfs sendsigs',
++			   '$network' => 'networking ifupdown',
++			   '$syslog' => 'syslog ',
++			   '$time' => 'hwclock',
++			   '$portmap' => 'rpcbind');
 +
 +my %vsrv;
 +open(VSERV, "</etc/insserv.conf") || die "error: unable to read /etc/insserv.conf";
@@ -270,3 +276,20 @@ Origin: upstream
  		fprintf(stderr, "unable to exec `%s': %s\n",
  		    file, strerror(errno));
  		svc_unlock(basename_c(service), fd);
+--- a/src/librc/librc-depend.c
++++ b/src/librc/librc-depend.c
+@@ -817,14 +817,6 @@
+ 			    strcmp(depend, service) == 0)
+ 				continue;
+ 
+-			/* .sh files are not init scripts */
+-			l = strlen(depend);
+-			if (l > 2 &&
+-			    depend[l - 3] == '.' &&
+-			    depend[l - 2] == 's' &&
+-			    depend[l - 1] == 'h')
+-				continue;
+-
+ 			/* Remove our dependency if instructed */
+ 			if (depend[0] == '!') {
+ 				rc_stringlist_delete(deptype->services, depend + 1);

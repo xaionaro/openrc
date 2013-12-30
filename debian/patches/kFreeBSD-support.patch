@@ -1,0 +1,114 @@
+Description: Adds support for Debian GNU/kFreeBSD
+ This patch makes it possible to build OpenRC on Debian GNU/kFreeBSD.
+Author: Steven Chamberlain <steven@pyro.eu.org>
+Forwarded: no
+Date: 2013-10-29
+
+diff --git a/etc/rc.conf.GNU-kFreeBSD b/etc/rc.conf.GNU-kFreeBSD
+new file mode 100644
+index 0000000..67fe2ae
+--- /dev/null
++++ b/etc/rc.conf.GNU-kFreeBSD
+@@ -0,0 +1,11 @@
++##############################################################################
++# GNU/kFreeBSD SPECIFIC OPTIONS
++
++# This is the subsystem type. Valid options on GNU/kFreeBSD:
++# ""        - nothing special
++# "jail"    - FreeBSD jails (not yet implemented)
++# If this is commented out, automatic detection will be used.
++#
++# This should be set to the value representing the environment this file is
++# PRESENTLY in, not the virtualization the environment is capable of.
++#rc_sys=""
+diff --git a/mk/os-GNU-kFreeBSD.mk b/mk/os-GNU-kFreeBSD.mk
+new file mode 100644
+index 0000000..72fea3e
+--- /dev/null
++++ b/mk/os-GNU-kFreeBSD.mk
+@@ -0,0 +1,9 @@
++# Copyright (c) 2008 Roy Marples <roy@marples.name>
++# Released under the 2-clause BSD license.
++
++# Generic definitions
++
++CPPFLAGS+=	-D_BSD_SOURCE -D_XOPEN_SOURCE=700
++LIBDL=		-Wl,-Bdynamic -ldl
++LIBKVM?=
++include ${MK}/os-BSD.mk
+diff --git a/mk/os.mk b/mk/os.mk
+index 3e18962..6b2d428 100644
+--- a/mk/os.mk
++++ b/mk/os.mk
+@@ -3,7 +3,7 @@
+ 
+ # Generic definitions
+ 
+-_OS_SH=		uname -s
++_OS_SH=		uname -s | tr '/' '-'
+ _OS:= 		$(shell ${_OS_SH})
+ OS?= 		${_OS}
+ include ${MK}/os-${OS}.mk
+diff --git a/src/librc/librc-daemon.c b/src/librc/librc-daemon.c
+index 6e7d57f..e98b02c 100644
+--- a/src/librc/librc-daemon.c
++++ b/src/librc/librc-daemon.c
+@@ -30,7 +30,7 @@
+ 
+ #include "librc.h"
+ 
+-#if defined(__linux__)
++#if defined(__linux__) || defined (__GLIBC__)
+ static bool
+ pid_is_exec(pid_t pid, const char *exec)
+ {
+diff --git a/src/rc/mountinfo.c b/src/rc/mountinfo.c
+index 43d9c83..ce3f27d 100644
+--- a/src/rc/mountinfo.c
++++ b/src/rc/mountinfo.c
+@@ -39,7 +39,7 @@
+ #  include <sys/statvfs.h>
+ #  define statfs statvfs
+ #  define F_FLAGS f_flag
+-#elif defined (__linux__)
++#elif defined (__linux__) || defined (__GLIBC__)
+ #  include <mntent.h>
+ #endif
+ 
+@@ -265,7 +265,7 @@ find_mounts(struct args *args)
+ 	return list;
+ }
+ 
+-#elif defined (__linux__)
++#elif defined (__linux__) || defined (__GLIBC__)
+ static struct mntent *
+ getmntfile(const char *file)
+ {
+diff --git a/src/rc/rc-logger.c b/src/rc/rc-logger.c
+index 468225f..e8fb0ff 100644
+--- a/src/rc/rc-logger.c
++++ b/src/rc/rc-logger.c
+@@ -44,7 +44,7 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__GLIBC__)
+ #  include <pty.h>
+ #elif defined(__NetBSD__) || defined(__OpenBSD__)
+ #  include <util.h>
+diff --git a/src/rc/runscript.c b/src/rc/runscript.c
+index 3ecb6b5..7dc7593 100644
+--- a/src/rc/runscript.c
++++ b/src/rc/runscript.c
+@@ -52,7 +52,7 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__GLIBC__)
+ #  include <pty.h>
+ #elif defined(__NetBSD__) || defined(__OpenBSD__)
+ #  include <util.h>
+-- 
+1.8.3.2

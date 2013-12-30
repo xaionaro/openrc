@@ -1,5 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: openrc
+Upstream-Contact: OpenRC maintainers <openrc@gentoo.org>
 Source: git://git.overlays.gentoo.org/proj/openrc.git
 
 Files: debian/*

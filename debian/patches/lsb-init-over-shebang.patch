@@ -1,3 +1,8 @@
+Description: Removes the need of #!/bin/runscript in sh/gendepends.sh.in
+Author: Benda Xu <freecnpro@gmail.com>
+Forwarded: not-needed
+Date: 2013-08-31
+
 --- a/sh/gendepends.sh.in
 +++ b/sh/gendepends.sh.in
 @@ -51,13 +51,6 @@

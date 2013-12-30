@@ -25,10 +25,7 @@ EOF
 	exit (1);
 }
 
-if ( ! -f "/etc/init.d/.legacy-bootordering" ) {
-    info("using dependency based boot sequencing");
-    exit openrc_updatercd(@ARGV);
-}
+exit openrc_updatercd(@ARGV);
 
 sub info {
     print STDOUT "update-rc.d: @_\n";
@@ -72,23 +69,23 @@ sub openrc_updatercd {
     $action = shift @args;
     if ("remove" eq $action) {
         if ( -f "/etc/init.d/$scriptname" ) {
-			my $rc = system("rc-update", "delete", $scriptname) >> 8;
+	    my $rc = system("rc-update", "delete", $scriptname) >> 8;
             error_code($rc, "rc-update rejected the script header") if $rc;
-           	exit $rc;
-
+	    exit $rc;
         } else {
-			error "initscript does not exist: /etc/init.d/$scriptname";
+	    warning "initscript does not exist: /etc/init.d/$scriptname";
+	    exit 0;
         }
     } elsif ("defaults" eq $action || "start" eq $action ||
              "stop" eq $action) {
         # All start/stop/defaults arguments are discarded so emit a
         # message if arguments have been given and are in conflict
         # with Default-Start/Default-Stop values of LSB comment.
-        my $rl = &cmp_args_with_defaults($scriptname, $action, @args);
+        my $rl = cmp_args_with_defaults($scriptname, $action, @args);
+	exit 0 if (!$rl);
         if ( -f "/etc/init.d/$scriptname") {
 			if("stop" ne $action){
-				$rl = &rlconv($rl);
-				my $rc = system("rc-update", "add", $scriptname, $rl) >> 8;
+				my $rc = system("rc-update", "add", $scriptname, rlconv($rl)) >> 8;
             	error_code($rc, "rc-update rejected the script header") if $rc;
             	exit $rc;
 			}
@@ -96,13 +93,13 @@ sub openrc_updatercd {
             error("initscript does not exist: /etc/init.d/$scriptname");
         }
     } elsif ("disable" eq $action || "enable" eq $action) {
-		my $rl = &rlconv(join(' ', @args));
+		my @rl = rlconv(join(' ', @args));
 		if("disable" eq $action){
-			my $rc = system("rc-update", "delete", $scriptname, $rl) >> 8;
+			my $rc = system("rc-update", "delete", $scriptname, @rl) >> 8;
 			error_code($rc, "rc-update rejected the script header") if $rc;
         	exit $rc;
 		}else{
-			my $rc = system("rc-update", "add", $scriptname, $rl) >> 8;
+			my $rc = system("rc-update", "add", $scriptname, @rl) >> 8;
 			error_code($rc, "rc-update rejected the script header") if $rc;
         	exit $rc;
 		}
@@ -198,7 +195,7 @@ sub cmp_args_with_defaults {
                 "$name Default-Stop values ($lsb_str)";
     }
 
-	return join(" ", @lsb_start_lvls);
+    return join(" ", @lsb_start_lvls);
 }
 
 sub rlconv {
@@ -206,12 +203,12 @@ sub rlconv {
 	my $is_default = 0;
 	my $runlevels = shift;
 	for my $rl (split(' ', $runlevels)){
-		if($rl =~ /^[1Ss]$/){
+		if($rl =~ /^[Ss]$/){
+			$rl = "sysinit";
+		}elsif("1" eq $rl){
 			$rl = "single";
-		}elsif("0" eq $rl){
+		}elsif("0" eq $rl or "6" eq $rl){
 			$rl = "shutdown";
-		}elsif("6" eq $rl){
-			$rl = "reboot";
 		}else{
 			$is_default++;
 			if($is_default == 1){
@@ -224,5 +221,5 @@ sub rlconv {
 		push(@nrl, $rl);
 	}
 
-	return join(' ', @nrl);
+	return @nrl;
 }
