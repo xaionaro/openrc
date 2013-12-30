@@ -53,15 +53,15 @@ do
 
 		# Only generate dependencies for runscripts
 		read one two three <"$RC_SERVICE"
-		[ "$one" = "#!@SBINDIR@/runscript" ] || \
-		[ "$one" = "#!" -a "$two" = "@SBINDIR@/runscript" ] || \
+		[ "$one" = "#!@PREFIX@/sbin/runscript" ] || \
+		[ "$one" = "#!" -a "$two" = "@PREFIX@/sbin/runscript" ] || \
 			continue
 		unset one two three
 
-		RC_SVCNAME=${RC_SERVICE##*/} ; export RC_SVCNAME
+		export RC_SVCNAME=${RC_SERVICE##*/}
 
 		# Compat
-		SVCNAME=$RC_SVCNAME ; export SVCNAME
+		export SVCNAME=$RC_SVCNAME
 
 		(
 		# Save stdout in fd3, then remap it to stderr

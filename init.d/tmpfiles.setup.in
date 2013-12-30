@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright 1999-2012 Gentoo Foundation
 # Released under the 2-clause BSD license.
 
@@ -12,8 +12,7 @@ depend()
 start()
 {
 	ebegin "setting up tmpfiles.d entries"
-	@LIBEXECDIR@/sh/tmpfiles.sh --exclude-prefix=/dev --create --remove \
-		${tmpfiles_opts}
+	@LIBEXECDIR@/sh/tmpfiles.sh --create --remove ${tmpfiles_opts}
 	eend $?
 	return 0
 }

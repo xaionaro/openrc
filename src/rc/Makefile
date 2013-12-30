@@ -11,7 +11,7 @@ SBINDIR=	${PREFIX}/sbin
 LINKDIR=	${LIBEXECDIR}
 
 BINLINKS=	rc-status
-SBINLINKS=	rc-service rc-update runscript service start-stop-daemon
+SBINLINKS=	rc-service rc-update runscript start-stop-daemon
 RC_BINLINKS=	einfon einfo ewarnn ewarn eerrorn eerror ebegin eend ewend \
 		eindent eoutdent esyslog eval_ecolors ewaitfile \
 		veinfo vewarn vebegin veend vewend veindent veoutdent \
@@ -51,7 +51,7 @@ include ${MK}/pam.mk
 # $3 is the path where the links are created
 define make-links
 	for x in $(1); do \
-		if [ "${MKSELINUX}" = yes ]; then \
+		if test -n "${MKSELINUX}"; then \
 			printf '#!/bin/sh\nexec ${2} --applet %s "$$@"\n' $$x >${3}/$$x; \
 			chmod ${BINMODE} ${3}/$$x; \
 		else \

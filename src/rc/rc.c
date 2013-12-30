@@ -727,20 +727,16 @@ handle_bad_signal(int sig)
 #endif
 
 #include "_usage.h"
-#define usagestring ""					\
-    "Usage: rc [options] [<runlevel>]"
-#define getoptstring "a:no:s:S" getoptstring_COMMON
+#define getoptstring "a:o:s:S" getoptstring_COMMON
 static const struct option longopts[] = {
 	{ "applet",   1, NULL, 'a' },
-	{ "no-stop", 0, NULL, 'n' },
-	{ "override",    1, NULL, 'o' },
-	{ "service",     1, NULL, 's' },
-	{ "sys",         0, NULL, 'S' },
+	{ "override", 1, NULL, 'o' },
+	{ "service",  1, NULL, 's' },
+	{ "sys",      0, NULL, 'S' },
 	longopts_COMMON
 };
 static const char * const longopts_help[] = {
 	"runs the applet specified by the next argument",
-	"do not stop any services",
 	"override the next runlevel to change into\n"
 	"when leaving single user or boot runlevels",
 	"runs the service specified with the rest\nof the arguments",
@@ -764,7 +760,6 @@ main(int argc, char **argv)
 	int opt;
 	bool parallel;
 	int regen = 0;
-	bool nostop = false;
 #ifdef __linux__
 	char *proc;
 	char *p;
@@ -814,9 +809,6 @@ main(int argc, char **argv)
 		case 'a':
 			/* Do nothing, actual logic in run_applets, this
 			 * is a placeholder */
-			break;
-		case 'n':
-			nostop = true;
 			break;
 		case 'o':
 			if (*optarg == '\0')
@@ -1028,7 +1020,7 @@ main(int argc, char **argv)
 	parallel = rc_conf_yesno("rc_parallel");
 
 	/* Now stop the services that shouldn't be running */
-	if (stop_services && !nostop)
+	if (stop_services)
 		do_stop_services(newlevel, parallel, going_down);
 
 	/* Wait for our services to finish */

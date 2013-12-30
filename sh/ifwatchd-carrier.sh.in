@@ -1,0 +1,5 @@
+#!@SHELL@
+# Wrapper for ifwatchd(8)
+
+export IN_BACKGROUND=yes
+$RC_SERVICE --quiet start

@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -31,7 +31,7 @@ start()
 				ebegin "Loading custom binary format handlers"
 				fmts=$(grep -hsv -e '^[#;]' -e '^[[:space:]]*$' \
 					/run/binfmt.d/*.conf \
-					/etc/binfmt.d/*.conf \
+					@SYSCONFDIR@/binfmt.d/*.conf \
 					""/usr/lib/binfmt.d/*.conf)
 				if [ -n "${fmts}" ]; then
 					echo "${fmts}" > /proc/sys/fs/binfmt_misc/register

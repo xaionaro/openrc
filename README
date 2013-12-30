@@ -10,7 +10,7 @@ You may wish to tweak the installation with the below arguments
 PROGLDFLAGS=-static
 LIBNAME=lib64
 DESTDIR=/tmp/openrc-image
-MKNET=no
+MKNET=oldnet
 MKPAM=pam
 MKPREFIX=yes
 MKPKGCONFIG=no
@@ -18,7 +18,6 @@ MKSELINUX=yes
 MKSTATICLIBS=no
 MKTERMCAP=ncurses
 MKTERMCAP=termcap
-MKTOOLS=yes
 PKG_PREFIX=/usr/pkg
 LOCAL_PREFIX=/usr/local
 PREFIX=/usr/local
@@ -57,9 +56,6 @@ init.d.misc is not installed by default as the scripts will need
 tweaking on a per distro basis. They are also non essential to the operation
 of the system.
 
-As of OpenRC-0.12, the net.* scripts, originally from Gentoo Linux, have
-been removed. If you need these scripts, look for a package called
-netifrc, which is maintained by them.
 
 Reporting Bugs
 --------------

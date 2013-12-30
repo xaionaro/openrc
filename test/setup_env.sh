@@ -17,9 +17,8 @@ elif ! . ${top_srcdir}/sh/functions.sh; then
 	exit 1
 fi
 
-LD_LIBRARY_PATH=${top_builddir}/src/libeinfo:${top_builddir}/src/librc:${LD_LIBRARY_PATH}
-PATH=${top_builddir}/src/rc:${PATH}
-export LD_LIBRARY_PATH PATH
+export LD_LIBRARY_PATH=${top_builddir}/src/libeinfo:${top_builddir}/src/librc:${LD_LIBRARY_PATH}
+export PATH=${top_builddir}/src/rc:${PATH}
 
 cd ${top_srcdir}/src/rc
 ${MAKE:-make} links >/dev/null

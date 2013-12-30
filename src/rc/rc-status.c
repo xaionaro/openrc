@@ -172,9 +172,7 @@ print_services(const char *runlevel, RC_STRINGLIST *svcs)
 }
 
 #include "_usage.h"
-#define usagestring ""						\
-	"Usage: rc-status [options] <runlevel>...\n"		\
-	"   or: rc-status [options] [-a | -c | -l | -r | -s | -u]"
+#define extraopts "[runlevel1] [runlevel2] ..."
 #define getoptstring "aclrsu" getoptstring_COMMON
 static const struct option longopts[] = {
 	{"all",         0, NULL, 'a'},
@@ -351,9 +349,6 @@ rc_status(int argc, char **argv)
 			rc_stringlist_free(tmp);
 		}
 		l->value = p;
-		/* we are unsetting RC_SVCNAME because last loaded service 
-		   wount be added to list */
-		unsetenv("RC_SVCNAME");
 		print_level("Dynamic", "needed");
 		print_services(NULL, nservices);
 		print_level("Dynamic", "manual");

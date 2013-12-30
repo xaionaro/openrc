@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -27,9 +27,9 @@ cleanup_tmp_dir()
 		ebegin "Wiping $dir directory"
 
 		# Faster than raw find
-		if ! rm -rf -- [!ajlq\.]* 2>/dev/null ; then
+		if ! rm -rf -- [^ajlq\.]* 2>/dev/null ; then
 			# Blah, too many files
-			find . -maxdepth 1 -name '[!ajlq\.]*' -exec rm -rf -- {} +
+			find . -maxdepth 1 -name '[^ajlq\.]*' -exec rm -rf -- {} +
 		fi
 
 		# pam_mktemp creates a .private directory within which
@@ -57,34 +57,6 @@ cleanup_tmp_dir()
 			.*-unix
 		eend 0
 	fi
-}
-
-cleanup_var_run_dir()
-{
-	ebegin "Cleaning /var/run"
-	for x in $(find /var/run ! -type d ! -name utmp \
-		! -name random-seed ! -name dev.db \
-		! -name ld-elf.so.hints ! -name ld.so.hints);
-	do
-		# Clean stale sockets
-		if [ -S "$x" ]; then
-			if type fuser >/dev/null 2>&1; then
-				fuser "$x" >/dev/null 2>&1 || rm -- "$x"
-			else
-				rm -- "$x"
-			fi
-		fi
-		[ ! -f "$x" ] && continue
-		# Do not remove pidfiles of already running daemons
-		case "$x" in
-			*.pid)
-				start-stop-daemon --test --quiet \
-				--stop --pidfile "$x" && continue
-			;;
-		esac
-		rm -f -- "$x"
-	done
-	eend 0
 }
 
 mkutmp()
@@ -115,16 +87,6 @@ migrate_to_run()
  	fi
 }
 
-clean_run()
-{
-	local dir
-	dir=$(mktemp -d)
-	mount --bind / $dir
-	rm -rf $dir/run/*
-	umount $dir
-	rm -rf $dir
-}
-
 start()
 {
 	# Remove any added console dirs
@@ -153,7 +115,6 @@ start()
 	if [ "$RC_UNAME" = Linux -a -d /run ]; then
 		migrate_to_run	/var/lock /run/lock
 		migrate_to_run	/var/run /run
-		clean_run
 	fi
 
 	if checkpath -W /var/run; then
@@ -166,13 +127,36 @@ start()
 		[ -e /var/log/wtmp ] || mkutmp /var/log/wtmp
 		eend 0
 
-		mountinfo -q -f tmpfs /var/run || cleanup_var_run_dir
+		ebegin "Cleaning /var/run"
+		for x in $(find /var/run ! -type d ! -name utmp \
+			! -name random-seed ! -name dev.db \
+			! -name ld-elf.so.hints ! -name ld.so.hints);
+		do
+			# Clean stale sockets
+			if [ -S "$x" ]; then
+				if type fuser >/dev/null 2>&1; then
+					fuser "$x" >/dev/null 2>&1 || rm -- "$x"
+				else
+					rm -- "$x"
+				fi
+			fi
+			[ ! -f "$x" ] && continue
+			# Do not remove pidfiles of already running daemons
+			case "$x" in
+				*.pid)
+					start-stop-daemon --test --quiet \
+					--stop --pidfile "$x" && continue
+				;;
+			esac
+			rm -f -- "$x"
+		done
+		eend 0
 	fi
 
 	# Clean up /tmp directories
 	local tmp=
 	for tmp in ${clean_tmp_dirs:-${wipe_tmp_dirs-/tmp}}; do
-		mountinfo -q -f tmpfs "$tmp" || cleanup_tmp_dir "$tmp"
+		cleanup_tmp_dir "$tmp"
 	done
 
 	if checkpath -W /tmp; then
@@ -190,7 +174,7 @@ start()
 	if yesno $log_dmesg; then
 		if $logw || checkpath -W /var/log; then
 			# Create an 'after-boot' dmesg log
-			if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ -a "$RC_SYS" != LXC ]; then
+			if [ "$RC_SYS" != VSERVER -a "$RC_SYS" != OPENVZ ]; then
 				dmesg > /var/log/dmesg
 				chmod 640 /var/log/dmesg
 			fi

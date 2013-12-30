@@ -60,12 +60,9 @@ First we ensure that any services that depend on us are stopped. If any
 services that need us fail to stop then we exit with a suitable error,
 otherwise call the supplied stop function if it exists.
 .It Ar restart
-Stops and starts the service, including dependencies. This cannot be
-overridden. See the description of the RC_CMD variable below for the
-method to make your service behave differently when restart is being
-executed.
+Stop and start the service, including dependencies.
 .It Ar status
-Shows the status of the service. The return code matches the status, with the
+Show the status of the service. The return code matches the status, with the
 exception of "started" returning 0 to match standard command behaviour.
 .It Ar zap
 Resets the service state to stopped and removes all saved data about the
@@ -88,8 +85,8 @@ Output from any non OpenRC commands is not affected.
 .It Fl v , -verbose
 Turns on any extra informational output the service generates.
 .It Fl Z , -dry-run
-Shows which services would be stopped and/or started without actually stopping
-or starting them.
+Shows what services would be stopped and/or started without actually starting
+or stopping them.
 .El
 .Pp
 The following variables affect the service script:
@@ -156,9 +153,6 @@ The service will start after these services and stop before these services.
 The service will start before these services and stop after these services.
 .It Ic provide
 We provide this virtual service. For example, named provides dns.
-Virtual services take precedence over real services, so it is highly
-recommended that you do not have a real service that has the same name
-as a virtual service.
 .It Ic config
 We should recalculate our dependencies if the listed files have changed.
 .It Ic keyword
@@ -365,8 +359,7 @@ offset. Otherwise it is undefined.
 The result of `uname -s`.
 .It Va RC_CMD
 This contains the name of the command the service script is executing, such
-as start, stop, restart etc. One example of using this is to make a
-service script behave differently when restart is being executed.
+as start, stop, restart etc.
 .El
 .Sh FILES
 .Pp
@@ -471,7 +464,7 @@ start_pre()
 		# stop_post.
 	fi
     # Ensure that our dirs are correct
-    checkpath --directory --owner foo:foo --mode 0775 \\
+    checkpath --dir --owner foo:foo --mode 0664 \\
 	/var/run/foo /var/cache/foo
 }
 

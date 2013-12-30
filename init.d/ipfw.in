@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@PREFIX@/sbin/runscript
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -8,7 +8,7 @@ ipfw_ip_in=${ipfw_ip_in-any}
 ipfw_ports_in=${ipfw_ports_in-auth ssh}
 ipfw_ports_nolog=${ipfw_ports_nolog-135-139,445 1026,1027 1433,1434}
 
-extra_commands="panic showstatus"
+opts="panic showstatus"
 
 depend() {
 	before net

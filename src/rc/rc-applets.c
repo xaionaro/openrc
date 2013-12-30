@@ -507,7 +507,6 @@ static const struct {
 	{ "rc-service",          rc_service,        },
 	{ "rc-status",           rc_status,         },
 	{ "rc-update",           rc_update,         },
-	{ "service",             rc_service,        },
 	{ "update-rc",           rc_update,         },
 	A(runscript),
 	{ "start-stop-daemon",   start_stop_daemon, },
