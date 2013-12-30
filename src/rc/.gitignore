@@ -3,6 +3,7 @@ rc-status
 rc-service
 rc-update
 runscript
+service
 start-stop-daemon
 einfon
 einfo
@@ -56,3 +57,5 @@ mark_service_hotplugged
 mark_service_failed
 rc-abort
 rc
+openrc
+openrc-run

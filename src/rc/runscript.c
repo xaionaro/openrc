@@ -52,7 +52,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__GLIBC__)
 #  include <pty.h>
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 #  include <util.h>
@@ -210,8 +210,7 @@ start_services(RC_STRINGLIST *list)
 			{
 				rc_service_schedule_start(service,
 				    svc->value);
-				ewarn("WARNING: %s is scheduled to started"
-				    " when %s has started",
+				ewarn("WARNING: %s will start when %s has started",
 				    svc->value, applet);
 			} else
 				service_start(svc->value);
@@ -313,15 +312,13 @@ write_prefix(const char *buffer, size_t bytes, bool *prefixed)
 	if (lock_fd != -1) {
 		while (flock(lock_fd, LOCK_EX) != 0) {
 			if (errno != EINTR) {
-				eerror("flock() failed: %s", strerror(errno));
+				ewarnv("flock() failed: %s", strerror(errno));
 				break;
 			}
 		}
 	}
-#ifdef RC_DEBUG
 	else
-		ewarn("Couldn't open the prefix lock, please make sure you have enough permissions");
-#endif
+		ewarnv("Couldn't open the prefix lock, please make sure you have enough permissions");
 
 	for (i = 0; i < bytes; i++) {
 		/* We don't prefix eend calls (cursor up) */
@@ -762,8 +759,7 @@ svc_start_deps(void)
 		}
 		rc_stringlist_free(tmplist);
 		tmplist = NULL;
-		ewarnx("WARNING: %s is scheduled to start when "
-		    "%s has started", applet, tmp);
+		ewarnx("WARNING: %s will start when %s has started", applet, tmp);
 		free(tmp);
 	}
 
@@ -1120,7 +1116,7 @@ static const char *const longopts_help[] = {
 #include "_usage.c"
 
 int
-runscript(int argc, char **argv)
+openrc_run(int argc, char **argv)
 {
 	bool doneone = false;
 	int retval, opt, depoptions = RC_DEP_TRACE;
@@ -1134,12 +1130,12 @@ runscript(int argc, char **argv)
 
 	/* Show help if insufficient args */
 	if (argc < 2 || !exists(argv[1])) {
-		fprintf(stderr, "runscript should not be run directly\n");
+		fprintf(stderr, "openrc-run should not be run directly\n");
 		exit(EXIT_FAILURE);
 	}
 
 	if (stat(argv[1], &stbuf) != 0) {
-		fprintf(stderr, "runscript `%s': %s\n",
+		fprintf(stderr, "openrc-run `%s': %s\n",
 		    argv[1], strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -1423,4 +1419,11 @@ runscript(int argc, char **argv)
 	}
 
 	return retval;
+}
+
+int
+runscript(int argc, char **argv)
+{
+	ewarn("runscript is deprecated; please use openrc-run instead.");
+	return (openrc_run(argc, argv));
 }

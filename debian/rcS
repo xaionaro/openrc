@@ -1,20 +1,8 @@
 #!/bin/sh
-
-# OpenRC boots with standard inittab
-# Bill Wang <freecnpro@gmail.com>
-
+# Wrapper of OpenRC called from inittab
 ### BEGIN INIT INFO
-# Provides:          /etc/init.d/rcS
-# Required-Start:    
-# Required-Stop:     
-# X-Start-Before:    
-# X-Stop-After:      
-# Default-Start:     
-# Default-Stop:      
-# Short-Description: This is a false service.
-# Description:       This is a false service, OpenRC boots with standard inittab.
+# Short-Description:    a hack to prevent to be sourced
 ### END INIT INFO
 
 set -e
-
-exec /sbin/rc sysinit
+exec /sbin/openrc sysinit

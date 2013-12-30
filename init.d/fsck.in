@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -9,7 +9,7 @@ _IFS="
 depend()
 {
 	use dev clock modules
-	keyword -jail -openvz -prefix -timeout -vserver -lxc
+	keyword -jail -openvz -prefix -timeout -vserver -lxc -uml
 }
 
 _abort() {

@@ -37,7 +37,7 @@ fi
 
 # /run is a new directory for storing volatile runtime data.
 # Read more about /run at https://lwn.net/Articles/436012
-sys="$(rc --sys)"
+sys="$(openrc --sys)"
 
 if [ ! -d /run ]; then
 	if [ "$sys" = VSERVER ]; then
@@ -49,6 +49,10 @@ if [ ! -d /run ]; then
 		eerror "The /run directory does not exist. Unable to continue."
 		return 1
 	fi
+fi
+
+if [ -L /run/openrc ]; then
+	rm /run/openrc
 fi
 
 if [ "$sys" = VSERVER ]; then

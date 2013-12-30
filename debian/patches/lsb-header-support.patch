@@ -164,7 +164,7 @@ Origin: upstream
  done
 --- a/sh/runscript.sh.in
 +++ b/sh/runscript.sh.in
-@@ -217,28 +217,33 @@
+@@ -223,28 +223,33 @@
  	cgroup_set_limits
  
  # Load our script
@@ -219,7 +219,7 @@ Origin: upstream
  fi
  
  while [ -n "$1" ]; do
-@@ -252,7 +257,12 @@
+@@ -258,7 +263,12 @@
  		_depend
  		cd /
  		continue
@@ -248,7 +248,7 @@ Origin: upstream
  			}
  			if (options & LS_DIR) {
  				if (stat(d->d_name, &buf) == 0 &&
-@@ -509,16 +502,6 @@
+@@ -533,16 +526,6 @@
  		errno = EINVAL;
  		return false;
  	}
@@ -272,7 +272,7 @@ Origin: upstream
  
  		/* Safe to run now */
 -		execl(file, file, "--lockfd", sfd, arg, (char *) NULL);
-+		execl("/sbin/runscript", "/sbin/runscript", file, "--lockfd", sfd, arg, (char *) NULL);
++		execl("/sbin/openrc-run", "/sbin/openrc-run", file, "--lockfd", sfd, arg, (char *) NULL);
  		fprintf(stderr, "unable to exec `%s': %s\n",
  		    file, strerror(errno));
  		svc_unlock(basename_c(service), fd);

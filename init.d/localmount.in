@@ -1,4 +1,4 @@
-#!@SBINDIR@/runscript
+#!@SBINDIR@/openrc-run
 # Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
 # Released under the 2-clause BSD license.
 
@@ -9,7 +9,7 @@ depend()
 	need fsck
 	use lvm modules mtab
 	after lvm modules
-	keyword -jail -openvz -prefix -vserver -lxc
+	keyword -jail -prefix -vserver -lxc
 }
 
 start()
@@ -59,7 +59,7 @@ stop()
 	no_umounts_r="^($no_umounts_r)$"
 
 	# Flush all pending disk writes now
-	sync; sync
+	sync
 
 	. "$RC_LIBEXECDIR"/sh/rc-mount.sh
 
