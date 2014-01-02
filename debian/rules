@@ -43,7 +43,7 @@ install-indep: build-indep $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
 
 override_dh_installmenu:
-	for file in start-stop-daemon runscript rc; do \
+	for file in start-stop-daemon runscript rc service ; do \
 		rm -f $(CURDIR)/debian/openrc/sbin/$${file} ; \
 	done
 
