@@ -1,4 +1,7 @@
-remove rpath hack: every Debian has /lib* in their standard link path.
+Description: remove rpath hack: every Debian has /lib* in their standard link path.
+Author: Benda Xu <heroxbd@gentoo.org>
+Forwarded: not-needed
+Last-Update: 2014-01-02
 
 --- a/mk/prog.mk
 +++ b/mk/prog.mk
