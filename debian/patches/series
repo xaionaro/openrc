@@ -1,2 +1,3 @@
 lsb-init-over-shebang.patch
 lsb-header-support.patch
+fix-src-rc-Makefile.patch
