@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Roger Leigh <rleigh@debian.org>
 Uploaders: Thomas Goirand <zigo@debian.org>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Homepage: http://www.gentoo.org/proj/en/base/openrc/
 Vcs-Git: git://anonscm.debian.org/collab-maint/openrc.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/openrc.git;a=summary
