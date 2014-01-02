@@ -4,10 +4,11 @@ Upstream-Contact: OpenRC maintainers <openrc@gentoo.org>
 Source: git://git.overlays.gentoo.org/proj/openrc.git, http://github.com/OpenRC/openrc
 
 Files: debian/*
-Copyright: 2012-2013 Roger Leigh <Roger Leigh <rleigh@debian.org>
-           2012-2013 Thomas Goirand <zigo@debian.org>
-           2012-2013 Benda Xu <heroxbd@gentoo.org>
-           2013 Bill Wang <freecnpro@gmail.com>
+Copyright: (c) 2012-2013, Roger Leigh <Roger Leigh <rleigh@debian.org>
+           (c) 2012-2014, Thomas Goirand <zigo@debian.org>
+           (c) 2012-2013, Benda Xu <heroxbd@gentoo.org>
+           (c) 2013, Bill Wang, <freecnpro@gmail.com>
+           (c) 2000,2001, Henrique de Moraes Holschuh <hmh@debian.org>
 License: GPL-2+
 
 License: GPL-2+
