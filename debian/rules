@@ -60,7 +60,8 @@ override_dh_installmenu:
 	done
 
 get-upstream-sources:
-	git remote add upstream git://git.overlays.gentoo.org/proj/openrc.git || true
+	# There's also a mirror at: git://git.overlays.gentoo.org/proj/openrc.git
+	git remote add upstream git://github.com/OpenRC/openrc.git || true
 	git fetch upstream
 	if ! git checkout master ; then \
 		echo "No upstream branch: checking out" ; \
