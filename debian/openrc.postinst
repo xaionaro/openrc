@@ -32,6 +32,13 @@ if [ "${1}" = "configure" ] ; then
 	if [ -e /usr/share/openrc/rcS ]; then
 		cp /usr/share/openrc/rcS /etc/init.d
 	fi
+	if [ -d /etc/runlevels/single ] ; then
+		for i in bootlogs killprocs motd single ; do
+			if [ ! -h /etc/runlevels/single/$i ] ; then
+				ln -s /etc/init.d/$i /etc/runlevels/single/$i
+			fi
+		done
+	fi
 	echo "**********************************************************************"
 	echo "*** WARNING: if you are replacing sysv-rc by OpenRC, then you must ***"
 	echo "*** reboot immediately using the following command:                ***"
