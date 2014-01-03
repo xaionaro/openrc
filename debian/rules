@@ -43,15 +43,23 @@ install-indep: build-indep $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
 
 override_dh_installmenu:
+	# These are symlinks for compatibility reasons, and we don't want
+	# them in Debian.
 	for file in start-stop-daemon runscript rc service ; do \
 		rm -f $(CURDIR)/debian/openrc/sbin/$${file} ; \
 	done
 
+	# These need to be removed, the same way as other stuff above
 	for file in service.8 service.8.gz start-stop-daemon.8 start-stop-daemon.8.gz ; do \
 		rm -f $(CURDIR)/debian/openrc/usr/share/man/man8/$${file} ; \
 	done
 
-	rm -f $(CURDIR)/debian/openrc/etc/conf.d/*
+	# These are Gentoo specific stuff, we don't want them
+	set -e && for i in sysctl.d local.d conf.d ; do \
+		rm -rf $(CURDIR)/debian/openrc/etc/$${i} ; \
+	done
+
+	# We don't want the Gentoo init scripts, we want only savecache to stay
 	find $(CURDIR)/debian/openrc/etc/init.d/* -name savecache -prune -o -exec rm -f {} +
 	find $(CURDIR)/debian/openrc/etc/runlevels/shutdown/* -name savecache -prune -o -exec rm -f {} +
 
