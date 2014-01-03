@@ -1,6 +1,8 @@
 openrc (0.12.4+20131230-2) UNRELEASED; urgency=medium
 
   * Delete gentoo specific config folders in /etc from the openrc package.
+  * Adds missing /etc/runlevels/single folder. Without it, reinstalling
+    the initscripts package fails.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 03 Jan 2014 05:42:12 +0000
 
