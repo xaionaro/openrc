@@ -1,4 +1,4 @@
-openrc (0.12.4+20131230-2) UNRELEASED; urgency=medium
+openrc (0.12.4+20131230-2) experimental; urgency=medium
 
   * Delete gentoo specific config folders in /etc from the openrc package.
   * Adds missing /etc/runlevels/single folder. Without it, reinstalling
