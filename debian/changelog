@@ -2,6 +2,7 @@ openrc (0.12.4+20131230-4) experimental; urgency=medium
 
   * Added etc/rc.conf.GNU and mk/os-GNU.mk to have a chance to be able to build
     under GNU Hurd.
+  * Patches librc.h so that it works for Hurd.
   * Added missing dependency on insserv (Closes: 734283). Thanks to Axel
     Beckert <abe@debian.org> for finding this out and his bug report.
 

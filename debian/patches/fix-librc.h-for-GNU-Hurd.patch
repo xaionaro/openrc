@@ -1,0 +1,30 @@
+Description: Fix librc.h for GNU Hurd
+ Defines PATH_MAX and MAXPATHLEN if they are found undefined, and remove the
+ includes which aren't available for hurd.
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: no
+Last-Update: 2014-01-06
+
+--- openrc-0.12.4+20131230.orig/src/librc/librc.h
++++ openrc-0.12.4+20131230/src/librc/librc.h
+@@ -59,9 +59,17 @@
+ 
+ #ifdef BSD
+ #include <sys/param.h>
+-#include <sys/user.h>
+-#include <sys/sysctl.h>
+-#include <kvm.h>
++//#include <sys/user.h>
++//#include <sys/sysctl.h>
++//#include <kvm.h>
++#endif
++
++#ifndef PATH_MAX
++#define PATH_MAX 4096
++#endif
++
++#ifndef MAXPATHLEN
++#define MAXPATHLEN PATH_MAX
+ #endif
+ 
+ #include "rc.h"

@@ -3,3 +3,4 @@ lsb-init-over-shebang.patch
 lsb-header-support.patch
 fix-src-rc-Makefile.patch
 adds-files-for-GNU-hurd.patch
+fix-librc.h-for-GNU-Hurd.patch
