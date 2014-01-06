@@ -1,3 +1,10 @@
+openrc (0.12.4+20131230-4) experimental; urgency=medium
+
+  * Added etc/rc.conf.GNU and mk/os-GNU.mk to have a chance to be able to build
+    under GNU Hurd.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 06 Jan 2014 14:04:53 +0800
+
 openrc (0.12.4+20131230-3) experimental; urgency=medium
 
   * Added creation of single user symlinks in /etc/runlevels/single in the
