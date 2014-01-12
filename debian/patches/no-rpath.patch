@@ -1,0 +1,24 @@
+Description: remove rpath hack: every Debian has /lib* in their standard link path.
+Author: Benda Xu <heroxbd@gentoo.org>
+Forwarded: not-needed
+Last-Update: 2014-01-02
+
+--- a/mk/prog.mk
++++ b/mk/prog.mk
+@@ -6,8 +6,6 @@
+ 
+ OBJS+=			${SRCS:.c=.o}
+ 
+-# Some systems don't include /lib in their standard link path
+-# so we should embed it if different
+ # This is currently hardcoded for NetBSD which has two dynamic linkers
+ # and we need to use the one in /libexec instead of /usr/libexec
+ _DYNLINK_SH=		if test "${PREFIX}" = "" && test -e /libexec/ld.elf_so; then \
+@@ -17,7 +15,6 @@
+ 			fi
+ _DYNLINK:=		$(shell ${_DYNLINK_SH})
+ LDFLAGS+=		${_DYNLINK}
+-LDFLAGS+=		-Wl,-rpath=${PREFIX}/${LIBNAME}
+ LDFLAGS+=		${PROGLDFLAGS}
+ 
+ CLEANFILES+=		${OBJS} ${PROG}

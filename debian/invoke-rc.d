@@ -452,7 +452,29 @@ if test x${FORCE} != x || test ${RC} -eq 104 ; then
 			;;
 		esac
 	    else
-		"${INITDPREFIX}${INITSCRIPTID}" "${saction}" "$@" && exit 0
+		# The sysv-rc version used to be: "${INITDPREFIX}${INITSCRIPTID}" "${saction}" "$@" && exit 0
+		# however, with OpenRC, we want to update the /run/openrc/started symlink database.
+		"${INITDPREFIX}${INITSCRIPTID}" "${saction}" "$@"
+		SCRIPT_RETURN=$?
+		if [ "${SCRIPT_RETURN}" = 0 ] ; then
+			case $saction in
+			start)
+				#echo "Started good!"
+				if [ ! -h /run/openrc/started/${INITSCRIPTID} ] ; then
+					#echo "Doing: ln -s ${INITDPREFIX}${INITSCRIPTID} /run/openrc/started/${INITSCRIPTID}"
+					ln -s ${INITDPREFIX}${INITSCRIPTID} /run/openrc/started/${INITSCRIPTID}
+				fi
+			;;
+			stop)
+				#echo "Stopped good!"
+				if [ -h /run/openrc/started/${INITSCRIPTID} ] ; then
+					#echo "Doing: rm /run/openrc/started/${INITSCRIPTID}"
+					rm /run/openrc/started/${INITSCRIPTID}
+				fi
+			;;
+			esac
+			exit 0
+		fi
 	    fi
 	    RC=$?
 
