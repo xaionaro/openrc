@@ -1,0 +1,105 @@
+Description: New feature: remove a service from all runlevels
+Author: Benda Xu <heroxbd@gentoo.org>
+Forwarded: https://bugs.gentoo.org/show_bug.cgi?id=497740
+Last-Update: 2014-01-12
+
+--- a/src/rc/rc-update.c
++++ b/src/rc/rc-update.c
+@@ -199,13 +199,15 @@
+ 	"Usage: rc-update [options] add <service> [<runlevel>...]\n"	\
+ 	"   or: rc-update [options] del <service> [<runlevel>...]\n"	\
+ 	"   or: rc-update [options] [show [<runlevel>...]]"
+-#define getoptstring "su" getoptstring_COMMON
++#define getoptstring "asu" getoptstring_COMMON
+ static const struct option longopts[] = {
++	{ "all",             0, NULL, 'a' },
+ 	{ "stack",           0, NULL, 's' },
+ 	{ "update",          0, NULL, 'u' },
+ 	longopts_COMMON
+ };
+ static const char * const longopts_help[] = {
++	"Operate on all the runlevels",
+ 	"Stack a runlevel instead of a service",
+ 	"Force an update of the dependency tree",
+ 	longopts_help_COMMON
+@@ -225,7 +227,7 @@
+ 	char *service = NULL;
+ 	char *p;
+ 	int action = 0;
+-	bool verbose = false, stack = false;
++	bool verbose = false, stack = false, all_runlevels = false;
+ 	int opt;
+ 	int retval = EXIT_FAILURE;
+ 	int num_updated = 0;
+@@ -238,6 +240,9 @@
+ 		case 's':
+ 		    stack = true;
+ 		break;
++		case 'a':
++		    all_runlevels = true;
++		break;
+ 		case 'u':
+ 			deptree = _rc_deptree_load(-1, &ret);
+ 			if (deptree)
+@@ -315,9 +320,14 @@
+ 			}
+ 
+ 			if (!TAILQ_FIRST(runlevels)) {
+-				p = rc_runlevel_get();
+-				rc_stringlist_add(runlevels, p);
+-				free(p);
++				if (all_runlevels) {
++					free(runlevels);
++					runlevels = rc_runlevel_list();
++				} else {
++					p = rc_runlevel_get();
++					rc_stringlist_add(runlevels, p);
++					free(p);
++				}
+ 			}
+ 
+ 			if (!TAILQ_FIRST(runlevels)) {
+--- a/man/rc-update.8
++++ b/man/rc-update.8
+@@ -21,7 +21,7 @@
+ .\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ .\" SUCH DAMAGE.
+ .\"
+-.Dd May 2, 2009
++.Dd Jan 13, 2014
+ .Dt RC-UPDATE 8 SMM
+ .Os OpenRC
+ .Sh NAME
+@@ -30,11 +30,13 @@
+ .Sh SYNOPSIS
+ .Nm
+ .Op Fl s , -stack
++.Op Fl a , -all
+ .Ar add
+ .Ar service
+ .Op Ar runlevel ...
+ .Nm
+ .Op Fl s , -stack
++.Op Fl a , -all
+ .Ar delete
+ .Ar service
+ .Op Ar runlevel ...
+@@ -86,9 +88,18 @@
+ .Fl s , -stack
+ option is given then we either add or remove the runlevel from the runlevel.
+ This allows inheritance of runlevels.
++
++If the
++.Fl a, -all
++option is given and no runlevel is specified, we either add (not much
++use though) or remove the service from all the runlevels. If a
++runlevel is specified, it takes no effect. It is useful when a service
++is removed and the dangling symlinks in the runlevels should be
++cleaned up.
+ .Sh SEE ALSO
+ .Xr openrc 8 ,
+ .Xr openrc-run 8 ,
+ .Xr rc-status 8
+ .Sh AUTHORS
+ .An Roy Marples <roy@marples.name>
++.An The OpenRC Team <openrc@gentoo.org>
