@@ -1,3 +1,10 @@
+openrc (0.12.4+20131230-5) experimental; urgency=low
+
+  * Add myself to the uploaders field.
+  * Add the feature of removing a service from all runlevels.
+
+ -- Benda Xu <heroxbd@gentoo.org>  Sun, 12 Jan 2014 17:14:27 +0900
+
 openrc (0.12.4+20131230-4) experimental; urgency=medium
 
   * Added etc/rc.conf.GNU and mk/os-GNU.mk to have a chance to be able to build
