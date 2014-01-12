@@ -66,12 +66,8 @@ sub openrc_updatercd {
     $scriptname = shift @args;
     $action = shift @args;
     if ("remove" eq $action) {
-        if ( -f "/etc/init.d/$scriptname" ) {
-	    my $rc = system("rc-update", "delete", $scriptname) >> 8;
-            error_code($rc, "rc-update rejected the script header") if $rc;
-	    exit $rc;
-        } else {
-	    warning "initscript does not exist: /etc/init.d/$scriptname";
+	    # let rc-update handle the dangling symlinks
+	    my $rc = system("rc-update", "-qqa", "delete", $scriptname);
 	    exit 0;
         }
     } elsif ("defaults" eq $action || "start" eq $action ||
