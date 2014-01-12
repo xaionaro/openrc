@@ -1,4 +1,31 @@
-openrc (0.12.4+20131230) experimental; urgency=low
+openrc (0.12.4+20131230-4) experimental; urgency=medium
+
+  * Added etc/rc.conf.GNU and mk/os-GNU.mk to have a chance to be able to build
+    under GNU Hurd.
+  * Patches librc.h so that it works for Hurd.
+  * Added missing dependency on insserv (Closes: 734283). Thanks to Axel
+    Beckert <abe@debian.org> for finding this out and his bug report.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 06 Jan 2014 14:04:53 +0800
+
+openrc (0.12.4+20131230-3) experimental; urgency=medium
+
+  * Added creation of single user symlinks in /etc/runlevels/single in the
+    postinst script of OpenRC (otherwise single user mode doesn't work).
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 03 Jan 2014 17:10:15 +0000
+
+openrc (0.12.4+20131230-2) experimental; urgency=medium
+
+  * Delete gentoo specific config folders in /etc from the openrc package.
+  * Adds missing /etc/runlevels/single folder. Without it, reinstalling
+    the initscripts package fails.
+  * Warns users about how to do the first reboot when switching from sysv-rc
+    to OpenRC.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 03 Jan 2014 05:42:12 +0000
+
+openrc (0.12.4+20131230-1) experimental; urgency=low
 
   * Initial release (Closes: 684396).
 

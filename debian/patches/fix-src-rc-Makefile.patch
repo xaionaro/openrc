@@ -1,0 +1,15 @@
+Description: Fix upstream Makefile with $(PROG) instead of PROG
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: not-needed
+Last-Update: 2014-01-02
+
+--- openrc-0.12.4+20131230.orig/src/rc/Makefile
++++ openrc-0.12.4+20131230/src/rc/Makefile
+@@ -91,5 +91,5 @@ install: all
+ 
+ check test::
+ 
+-links: $PROG
+-	$(call make-links,${ALL_LINKS},$PROG,.)
++links: $(PROG)
++	$(call make-links,${ALL_LINKS},$(PROG),.)

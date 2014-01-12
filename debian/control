@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Roger Leigh <rleigh@debian.org>
 Uploaders: Thomas Goirand <zigo@debian.org>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Homepage: http://www.gentoo.org/proj/en/base/openrc/
 Vcs-Git: git://anonscm.debian.org/collab-maint/openrc.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/openrc.git;a=summary
@@ -14,7 +14,7 @@ Architecture: any
 Conflicts: sysv-rc
 Replaces: sysv-rc
 Provides: sysv-rc
-Depends: libswitch-perl, ${shlibs:Depends}, ${misc:Depends}
+Depends: insserv, libswitch-perl, ${shlibs:Depends}, ${misc:Depends}
 Description: dependency based init system (runlevel change mechanism)
  OpenRC is a dependency based init system. It provides support for System V
  init, for booting, changing runlevels, starting and stopping services, and
