@@ -66,27 +66,22 @@ sub openrc_updatercd {
     $scriptname = shift @args;
     $action = shift @args;
     if ("remove" eq $action) {
-        if ( -f "/etc/init.d/$scriptname" ) {
-	    my $rc = system("rc-update", "delete", $scriptname) >> 8;
-            error_code($rc, "rc-update rejected the script header") if $rc;
-	    exit $rc;
-        } else {
-	    warning "initscript does not exist: /etc/init.d/$scriptname";
+	    # let rc-update handle the dangling symlinks
+	    my $rc = system("rc-update", "-qqa", "delete", $scriptname);
 	    exit 0;
-        }
     } elsif ("defaults" eq $action || "start" eq $action ||
              "stop" eq $action) {
         # All start/stop/defaults arguments are discarded so emit a
         # message if arguments have been given and are in conflict
         # with Default-Start/Default-Stop values of LSB comment.
-        my $rl = cmp_args_with_defaults($scriptname, $action, @args);
-	exit 0 if (!$rl);
+        my $rln = cmp_args_with_defaults($scriptname, $action, @args);
+	exit 0 if (!$rln);
         if ( -f "/etc/init.d/$scriptname") {
-			if("stop" ne $action){
-				my $rc = system("rc-update", "add", $scriptname, rlconv($rl)) >> 8;
+	    if("stop" ne $action){
+		my $rc = system("rc-update", "add", $scriptname, rlconv($rln)) >> 8;
             	error_code($rc, "rc-update rejected the script header") if $rc;
             	exit $rc;
-			}
+	    }
         } else {
             error("initscript does not exist: /etc/init.d/$scriptname");
         }
@@ -204,7 +199,7 @@ sub rlconv {
 		if($rl =~ /^[Ss]$/){
 			$rl = "sysinit";
 		}elsif("1" eq $rl){
-			$rl = "single";
+			$rl = "recovery";
 		}elsif("0" eq $rl or "6" eq $rl){
 			$rl = "shutdown";
 		}else{
