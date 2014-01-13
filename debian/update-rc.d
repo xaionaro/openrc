@@ -199,7 +199,7 @@ sub rlconv {
 		if($rl =~ /^[Ss]$/){
 			$rl = "sysinit";
 		}elsif("1" eq $rl){
-			$rl = "single";
+			$rl = "recovery";
 		}elsif("0" eq $rl or "6" eq $rl){
 			$rl = "shutdown";
 		}else{

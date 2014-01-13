@@ -12,7 +12,7 @@ case $1 in
 		runlevel="shutdown"
 		;;
 	1 )
-		runlevel="single"
+		runlevel="recovery"
 		;;
 	6 )
 		runlevel="reboot"
