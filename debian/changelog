@@ -1,22 +1,20 @@
-openrc (0.12.4+20131230-5) experimental; urgency=low
+openrc (0.12.4+20131230-4) experimental; urgency=medium
 
+  [ Benda Xu ]
   * Add myself to the uploaders field.
   * rc-update: Add the feature of removing a service from all runlevels.
     update-rc.d: make use of the new rc-update feature.
   * Rename "single" runlevel to "recovery".
     OpenRC treats single runlevel specially.
 
- -- Benda Xu <heroxbd@gentoo.org>  Sun, 12 Jan 2014 17:14:27 +0900
-
-openrc (0.12.4+20131230-4) experimental; urgency=medium
-
+  [ Thomas Goirand ]
   * Added etc/rc.conf.GNU and mk/os-GNU.mk to have a chance to be able to build
     under GNU Hurd.
   * Patches librc.h so that it works for Hurd.
   * Added missing dependency on insserv (Closes: 734283). Thanks to Axel
     Beckert <abe@debian.org> for finding this out and his bug report.
 
- -- Thomas Goirand <zigo@debian.org>  Mon, 06 Jan 2014 14:04:53 +0800
+ -- Thomas Goirand <zigo@debian.org>  Fri, 17 Jan 2014 07:01:23 +0000
 
 openrc (0.12.4+20131230-3) experimental; urgency=medium
 
