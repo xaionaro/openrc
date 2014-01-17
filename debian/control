@@ -11,7 +11,7 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/openrc.git;a=summa
 
 Package: openrc
 Architecture: any
-Conflicts: sysv-rc
+Conflicts: sysv-rc, file-rc
 Replaces: sysv-rc
 Provides: sysv-rc
 Depends: insserv, libswitch-perl, ${shlibs:Depends}, ${misc:Depends}
