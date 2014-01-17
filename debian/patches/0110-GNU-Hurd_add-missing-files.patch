@@ -1,5 +1,5 @@
 Description: Adds missing files for GNU Hurd
-Author: Thomas Goirand <zigo@debian.org>
+Author: Thomas Goirand <zigo@debian.org>, Svante Signell <srs@kth.se>
 Forwarded: no
 Last-Update: 2014-01-06
 
@@ -84,14 +84,102 @@ Last-Update: 2014-01-06
 +# execute cgroup_cleanup with /etc/init.d/<service> cgroup_cleanup or
 +# rc-service <service> cgroup_cleanup.
 +# rc_cgroup_cleanup="NO"
---- /dev/null
-+++ openrc-0.12.4+20131230/mk/os-GNU.mk
+--- /dev/null	2012-08-28 18:42:48.000000000 +0200
++++ b/sh/init.sh.GNU.in	2013-10-29 13:12:31.000000000 +0100
+@@ -0,0 +1,33 @@
++#!@SHELL@
++# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
++# Released under the 2-clause BSD license.
++
++# This basically mounts $svcdir as a ramdisk, but preserving its content
++# which allows us to run depscan.sh
++# FreeBSD has a nice ramdisk - we don't set a size as we should always
++# be fairly small and we unmount them after the boot level is done anyway
++# NOTE we don't set a size for Linux either
++# FreeBSD-7 supports tmpfs now :)
++# FIXME: Modify for GNU/Hurd
++mount_svcdir()
++{
++	if ! fstabinfo --mount "$RC_SVCDIR"; then
++		if ! mount -t tmpfs -o rw,noexec,nosuid none \
++			"$RC_SVCDIR" 2>/dev/null
++		then
++			mdconfig -a -t malloc -s "${rc_svcsize:-1024}"k -u 0
++			newfs -b 4096 -i 1024 -n /dev/md0
++			mount -o rw,noexec,nosuid /dev/md0 "$RC_SVCDIR"
++		fi
++	fi
++}
++
++. "$RC_LIBEXECDIR"/sh/functions.sh
++[ -r /etc/rc.conf ] && . /etc/rc.conf
++
++# Disable devd until we need it
++if [ -z "$RC_SYS" -a "$RC_UNAME" = "FreeBSD" ]; then
++	sysctl hw.bus.devctl_disable=1 >/dev/null
++fi
++
++. "$RC_LIBEXECDIR"/sh/init-common-post.sh
+--- /dev/null	2012-08-28 18:42:48.000000000 +0200
++++ b/conf.d/network.GNU.in	2013-10-29 12:45:04.000000000 +0100
+@@ -0,0 +1,4 @@
++
++# You can assign a default route
++#defaultroute="gw 192.168.0.1"
++#defaultroute6="gw 2001:a:b:c"
+--- /dev/null	2012-08-28 18:42:48.000000000 +0200
++++ b/mk/os-GNU.mk	2013-10-29 12:31:51.000000000 +0100
 @@ -0,0 +1,8 @@
 +# Copyright (c) 2008 Roy Marples <roy@marples.name>
 +# Released under the 2-clause BSD license.
 +
-+SFX=		.Linux.in
++SFX=		.GNU.in
 +PKG_PREFIX?=	/usr
 +
 +CPPFLAGS+=	-D_BSD_SOURCE -D_XOPEN_SOURCE=700
 +LIBDL=		-Wl,-Bdynamic -ldl
+--- /dev/null	2012-08-28 18:42:48.000000000 +0200
++++ b/conf.d/staticroute.GNU.in	2013-10-29 12:51:44.000000000 +0100
+@@ -0,0 +1,7 @@
++# Separate multiple routes using ; or new lines.
++# /etc/route.conf(5) takes precedence over this configuration.
++
++# Example static routes. See route(8) for syntax.
++# FIXME: "net ..." not supported
++#staticroute="net 192.168.0.0 -netmask 255.255.255.0 --address 10.73.1.1
++#net 192.168.1.0 -netmask 255.255.255.0 --address 10.73.1.1"
+--- /dev/null	2012-08-28 18:42:48.000000000 +0200
++++ b/init.d/sysctl.GNU.in	2013-10-29 13:13:31.000000000 +0100
+@@ -0,0 +1,32 @@
++#!@PREFIX@/sbin/runscript
++# Copyright (c) 2007-2009 Roy Marples <roy@marples.name>
++# Released under the 2-clause BSD license.
++#FIXME: Modify for GNU/Hurd
++
++depend()
++{
++	before bootmisc logger
++	keyword -prefix
++}
++
++start()
++{
++	[ -e /etc/sysctl.conf ] || return 0
++	local retval=0 var= comments= conf=
++	ebegin "Configuring kernel parameters"
++	eindent
++	for conf in @SYSCONFDIR@/sysctl.conf @SYSCONFDIR@/sysctl.d/*.conf; do
++		if [ -r "$conf" ]; then
++			vebegin "applying $conf"
++			while read var comments; do
++				case "$var" in
++				""|"#"*) continue;;
++				esac
++				sysctl -w "$var" >/dev/null || retval=1
++			done < "$conf"
++			veend $retval
++		fi
++	done
++	eoutdent
++	eend $retval "Some errors were encountered"
++}
