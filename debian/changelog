@@ -1,3 +1,10 @@
+openrc (0.12.4+20131230-6) UNRELEASED; urgency=low
+
+  * Added purge of /etc/runlevels, /lib/rc, and /etc/init.d/{rc,transit,rcS}
+    if OpenRC is purged.
+
+ -- Thomas Goirand <zigo@debian.org>  Mon, 20 Jan 2014 15:40:36 +0800
+
 openrc (0.12.4+20131230-5) experimental; urgency=low
 
   * OpenRC now supports Debian GNU/Hurd! :) Thanks to Svante Signell

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+if [ "${1}" = "purge" ] ; then
+	rm -rf /lib/rc /etc/runlevels
+	rm -f /etc/init.d/rc /etc/init.d/transit /etc/init.d/rcS
+fi
