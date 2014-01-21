@@ -1,4 +1,4 @@
-openrc (0.12.4+20131230-6) UNRELEASED; urgency=low
+openrc (0.12.4+20131230-6) experimental; urgency=low
 
   * Added purge of /etc/runlevels, /lib/rc, and /etc/init.d/{rc,transit,rcS}
     if OpenRC is purged.
