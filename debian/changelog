@@ -2,6 +2,8 @@ openrc (0.12.4+20131230-6) UNRELEASED; urgency=low
 
   * Added purge of /etc/runlevels, /lib/rc, and /etc/init.d/{rc,transit,rcS}
     if OpenRC is purged.
+  * Replaces the lsb.pl patch with an implementation in C, which doesn't need
+    to have /usr mounted early in the boot process (Closes: #734371).
 
  -- Thomas Goirand <zigo@debian.org>  Mon, 20 Jan 2014 15:40:36 +0800
 
