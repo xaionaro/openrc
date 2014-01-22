@@ -1,3 +1,11 @@
+openrc (0.12.4+20131230-7) experimental; urgency=medium
+
+  * lsb2rcconf two updates from Dmitry Yu Okunev <dyokunev@ut.mephi.ru>:
+    - adjust c code style to OpenRC guideline (allowed re-enabled unit tests)
+    - output nothing in absence of LSB header
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 22 Jan 2014 08:24:21 +0000
+
 openrc (0.12.4+20131230-6) experimental; urgency=low
 
   * Added purge of /etc/runlevels, /lib/rc, and /etc/init.d/{rc,transit,rcS}
