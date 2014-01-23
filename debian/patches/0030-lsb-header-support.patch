@@ -9,14 +9,29 @@ Date: 2014-01-21
 
 --- a/sh/gendepends.sh.in
 +++ b/sh/gendepends.sh.in
-@@ -74,10 +74,14 @@
+@@ -51,12 +51,14 @@
+ 	for RC_SERVICE in *; do
+ 		[ -x "$RC_SERVICE" -a -f "$RC_SERVICE" ] || continue
+ 
+-		# Only generate dependencies for OpenRC scripts
++		lsbh=$(lsb2rcconf "$RC_SERVICE")
++		# Only generate dependencies for OpenRC and LSB scripts
+ 		read one two three <"$RC_SERVICE"
+ 		[ "$one" = "#!@SBINDIR@/runscript" ] || \
+ 		[ "$one" = "#!@SBINDIR@/openrc-run" ] || \
+ 		[ "$one" = "#!" -a "$two" = "@SBINDIR@/runscript" ] || \
+ 		[ "$one" = "#!" -a "$two" = "@SBINDIR@/openrc-run" ] || \
++		[ -n "${lsbh}" ] || \
+ 			continue
+ 		unset one two three
+ 
+@@ -83,10 +85,13 @@
  
  		[ -e @SYSCONFDIR@/rc.conf ] && . @SYSCONFDIR@/rc.conf
  
 -		if . "$_dir/$RC_SVCNAME"; then
 -			echo "$RC_SVCNAME" >&3
 -			_depend
-+		lsbh=$(lsb2rcconf "$RC_SERVICE")
 +		if [ -n "${lsbh}" ]; then
 +			eval "${lsbh}"
 +		else

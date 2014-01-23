@@ -1,5 +1,4 @@
 0010-no-rpath.patch
-0020-lsb-init-over-shebang.patch
 0030-lsb-header-support.patch
 0040-fix-src-rc-Makefile.patch
 0050-operate-all-runlevels.patch
