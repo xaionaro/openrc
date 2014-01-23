@@ -9,6 +9,8 @@ openrc (0.12.4+20131230-8) experimental; urgency=low
     + update-rc.d: redirect shutdown to off
   * rules: clean librc.funcs.hidden.list, the test suite leftover.
   * control: remove the perl dependency, lsb.pl is superseded by lsb2rcconf.
+  * include the dependency loop detection patch from Dmitry Yu Okunev
+    <dyokunev@ut.mephi.ru>, but not enabling by default
 
  -- Benda Xu <heroxbd@gentoo.org>  Thu, 23 Jan 2014 14:43:53 +0900
 
