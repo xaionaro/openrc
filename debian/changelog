@@ -7,6 +7,7 @@ openrc (0.12.4+20131230-8) experimental; urgency=low
     + rc: enter and leave off runlevel before shutdown/reboot
     + rules: savecache moved from runlevel shutdown to off
     + update-rc.d: redirect shutdown to off
+  * rules: clean librc.funcs.hidden.list, the test suite leftover.
 
  -- Benda Xu <heroxbd@gentoo.org>  Thu, 23 Jan 2014 14:43:53 +0900
 

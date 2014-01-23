@@ -32,6 +32,7 @@ export LIBEXECDIR = /lib/rc
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -f $(DH_INSTALL_FILES)
+	rm -f src/test/librc.funcs.hidden.list
 
 override_dh_strip:
 	dh_strip --dbg-package=openrc-dbg
