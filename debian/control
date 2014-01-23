@@ -58,6 +58,22 @@ Description: dependency based init system (runtime library)
  .
  This package provides the runtime library.
 
+Package: librc1-dbg
+Section: debug
+Architecture: any
+Depends: librc1 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: dependency based init system (runtime library) - debug
+ OpenRC is a dependency based init system. It provides support for System V
+ init, for booting, changing runlevels, starting and stopping services, and
+ shutting down.
+ .
+ Originally written as Originally written as a Gentoo project, OpenRC is 100%
+ compatible with Gentoo init scripts. OpenRC, however, is not exclusively used
+ by Gentoo Linux, and aims at being platform-agnostic, and supporting the old
+ style init system historically available in Debian.
+ .
+ This package provides the debug symbols for the runtime library.
+
 Package: librc-dev
 Architecture: any
 Section: libdevel

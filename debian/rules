@@ -35,6 +35,7 @@ override_dh_auto_clean:
 
 override_dh_strip:
 	dh_strip --dbg-package=openrc-dbg
+	dh_strip --dbg-package=librc1-dbg
 
 install-arch: build-arch $(DH_INSTALL_FILES)
 	dh $@ $(DH_OPTIONS)
