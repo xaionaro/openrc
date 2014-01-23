@@ -201,7 +201,7 @@ sub rlconv {
 		}elsif("1" eq $rl){
 			$rl = "recovery";
 		}elsif("0" eq $rl or "6" eq $rl){
-			$rl = "shutdown";
+			$rl = "off";
 		}else{
 			$is_default++;
 			if($is_default == 1){

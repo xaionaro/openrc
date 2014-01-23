@@ -9,12 +9,14 @@ set -e
 # map numbered to named runlevel
 case $1 in
 	0 )
+		/sbin/openrc off
 		runlevel="shutdown"
 		;;
 	1 )
 		runlevel="recovery"
 		;;
 	6 )
+		/sbin/openrc off
 		runlevel="reboot"
 		;;
 	* )

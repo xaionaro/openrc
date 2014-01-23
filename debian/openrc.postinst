@@ -5,7 +5,7 @@ set -e
 if [ "${1}" = "configure" ] ; then
 	echo "Add existing services ..."
 
-	for rl in '1' '2' 'S'; do
+	for rl in 1 2 S; do
 		[ -d /etc/rc${rl}.d ] || continue
 
 		for f in $(ls -1 /etc/rc${rl}.d | egrep 'S[[:digit:]]{2}*'); do
@@ -15,7 +15,19 @@ if [ "${1}" = "configure" ] ; then
 		done
 	done
 
-	rc-update -u
+	[ -d /etc/rc6.d ] && for f in $(ls -1 /etc/rc6.d | egrep 'K[[:digit:]]{2}*'); do
+		svc=$(readlink -f /etc/rc6.d/${f})
+		# no need to duplicate services in the off runlevel
+		egrep -q '# Default-Start:\s+[S12345]' ${svc} && continue
+
+		svc=$(basename ${svc})
+		# reboot is managed by transit as below
+		[ ${svc} = reboot ] && continue
+
+		update-rc.d ${svc} enable 6
+	done
+
+	rc-update add savecache off
 
 	if [ -e /usr/share/openrc/transit ]; then
 		cp /usr/share/openrc/transit /etc/init.d
@@ -29,6 +41,9 @@ if [ "${1}" = "configure" ] ; then
 	if [ -e /usr/share/openrc/rcS ]; then
 		cp /usr/share/openrc/rcS /etc/init.d
 	fi
+
+	rc-update -u
+
 	echo "**********************************************************************"
 	echo "*** WARNING: if you are replacing sysv-rc by OpenRC, then you must ***"
 	echo "*** reboot immediately using the following command:                ***"

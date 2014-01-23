@@ -60,11 +60,10 @@ override_dh_installmenu:
 		rm -rf $(CURDIR)/debian/openrc/etc/$${i} ; \
 	done
 
-	# We don't want the Gentoo init scripts, we want only savecache to stay
+	# We don't want the Gentoo init scripts, but only want savecache to stay
 	find $(CURDIR)/debian/openrc/etc/init.d/* -name savecache -prune -o -exec rm -f {} +
-	find $(CURDIR)/debian/openrc/etc/runlevels/shutdown/* -name savecache -prune -o -exec rm -f {} +
 
-	for dir in boot default sysinit ; do \
+	for dir in boot default sysinit shutdown; do \
 		rm -f $(CURDIR)/debian/openrc/etc/runlevels/$${dir}/* ; \
 	done
 

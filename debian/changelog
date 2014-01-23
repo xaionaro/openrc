@@ -1,3 +1,15 @@
+openrc (0.12.4+20131230-8) experimental; urgency=low
+
+  * add librc1-dbg.
+  * lsb2rcconf: handle required-stop,should-stop and X-Stop-After.
+  * add runlevel "off" to hold all the shutdown scripts. (Closes: #736384)
+    + openrc.postinst: load scripts from rc6.d into "off" runlevel
+    + rc: enter and leave off runlevel before shutdown/reboot
+    + rules: savecache moved from runlevel shutdown to off
+    + update-rc.d: redirect shutdown to off
+
+ -- Benda Xu <heroxbd@gentoo.org>  Thu, 23 Jan 2014 14:43:53 +0900
+
 openrc (0.12.4+20131230-7) experimental; urgency=medium
 
   * lsb2rcconf two updates from Dmitry Yu Okunev <dyokunev@ut.mephi.ru>:
