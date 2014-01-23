@@ -1,8 +1,5 @@
 #!/bin/sh
 # Wrapper of OpenRC called from inittab
-### BEGIN INIT INFO
-# Short-Description:	a hack to prevent to be sourced
-### END INIT INFO
 
 set -e
 
