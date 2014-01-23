@@ -234,7 +234,7 @@ Date: 2014-01-21
 +THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --- /dev/null
 +++ b/src/lsb2rcconf/main.c
-@@ -0,0 +1,646 @@
+@@ -0,0 +1,640 @@
 +/*
 +    lsb2rcconf - prints configuration for openrc's rc.conf based on LSB
 +
@@ -715,12 +715,10 @@ Date: 2014-01-21
 +	if (!strcmp(header, "provides")) {
 +		PROVIDE(value);
 +	} else
-+	if (!strcmp(header, "required-start")) {
++	if (!strcmp(header, "required-start") || !strcmp(header, "required-stop")) {
 +		NEED(value);
 +	} else
-+/*	if (!strcmp(header, "required-stop")) {
-+	} else
-+	if (!strcmp(header, "default-start")) {
++/*	if (!strcmp(header, "default-start")) {
 +	} else
 +	if (!strcmp(header, "default-stop")) {
 +	} else*/
@@ -729,16 +727,12 @@ Date: 2014-01-21
 +	} else
 +/*	if (!strcmp(header, "description")) {
 +	} else*/
-+	if (!strcmp(header, "should-start")) {
++	if (!strcmp(header, "should-start") || !strcmp(header, "should-stop")) {
 +		USE(value);
 +	} else
-+/*	if (!strcmp(header, "should-stop")) {
-+	} else*/
-+	if (!strcmp(header, "x-start-before")) {
++	if (!strcmp(header, "x-start-before") || !strcmp(header, "x-stop-after")) {
 +		BEFORE(value);
 +	} else
-+/*	if (!strcmp(header, "x-stop-after")) {
-+	} else*/
 +	{}
 +
 +	return;
