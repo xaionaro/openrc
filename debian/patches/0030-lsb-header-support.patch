@@ -168,7 +168,7 @@ Date: 2014-01-21
 +STRIP_BINARY ?= yes
 +#EXAMPLES ?= yes
 +
-+STDFLAG ?= -D_GNU_SOURCE
++STDFLAG ?= -D_BSD_SOURCE
 +CSECFLAGS ?= -fstack-protector-all -Wall --param ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -fstack-check -DPARANOID
 +CFLAGS ?= -march=native -pipe -O2 -std=c99 
 +CFLAGS += $(CSECFLAGS) $(STDFLAG)
