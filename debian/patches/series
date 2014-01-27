@@ -4,3 +4,4 @@
 0050-operate-all-runlevels.patch
 0100-GNU-Hurd_PATH_MAX_and_defined.patch
 0110-GNU-Hurd_add-missing-files.patch
+0120-dependency-loop-detection.patch
