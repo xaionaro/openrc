@@ -5,3 +5,4 @@
 0100-GNU-Hurd_PATH_MAX_and_defined.patch
 0110-GNU-Hurd_add-missing-files.patch
 0120-dependency-loop-detection.patch
+0130-option-rc_loopsolver_warnings.patch

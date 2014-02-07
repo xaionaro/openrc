@@ -1,0 +1,167 @@
+Description: Added option to control loop solver's warnings
+Author: Dmitry Yu Okunev <dyokunev@ut.mephi.ru> 0x8E30679C
+Origin: https://github.com/xaionaro/openrc
+Last-Update: 2014-02-06
+
+--- openrc-0.12.4+20131230.orig/etc/rc.conf.in
++++ openrc-0.12.4+20131230/etc/rc.conf.in
+@@ -135,3 +135,6 @@
+ # This is mainly used for saying which servies do NOT provide net.
+ #rc_net_tap0_provide="!net"
+ 
++# Comment this line to disable warnings about dependency loops
++rc_loopsolver_warnings="YES"
++
+--- openrc-0.12.4+20131230.orig/src/librc/librc-depend.c
++++ openrc-0.12.4+20131230/src/librc/librc-depend.c
+@@ -891,13 +891,17 @@ deptype2char(unapm_type_t type) {
+  * @param svc_id2depinfo_bt ptr to binary tree root to get depinfo by svc id
+  * @param end_dep_num looping dependency id in use/need/after/provide matrix line */
+ static loopfound_t
+-rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num) {
++rc_deptree_solve_loop(service_id_t **unap_matrix[UNAPM_MAX], service_id_t service_id, void *svc_id2depinfo_bt, int end_dep_num, RC_DT_FLAGS flags) {
+ 	char **chain_strs = NULL;
+ 	service_id_t **chains;
+ 	unapm_type_t **deptypes;
+ 	unapm_type_t minimal_cost;
+ 	int chains_size = unap_matrix[0][0][0], chain_count;
+ 
++	/* svc_id2depinfo_bt may be NULL while any unit tests to simplify them */
++	char printwarn  =  (svc_id2depinfo_bt != NULL) && (flags & RCDTFLAGS_WARNINGS);
++	char printerr   =   svc_id2depinfo_bt != NULL;
++
+ 	chains = xmalloc(chains_size * sizeof(*chains));
+ 
+ 	/* building all dependency chains of the service */
+@@ -1060,9 +1064,9 @@ rc_deptree_solve_loop(service_id_t **una
+ 		}
+ 	}
+ 
+-	/* printing */
++	/* preparing services chain for further printing */
+ 
+-	if (svc_id2depinfo_bt != NULL) {
++	if (printwarn || printerr) {
+ 		int chain_num;
+ 		chain_strs = xmalloc(chain_count * sizeof(*chain_strs));
+ 
+@@ -1157,19 +1161,21 @@ rc_deptree_solve_loop(service_id_t **una
+ 
+ 			minimal_cost = MAX(minimal_cost, chain_cost);
+ 
+-			if (svc_id2depinfo_bt != NULL) {
+ /*
+-				RC_DEPINFO *depinfo;
+-				ENTRY item, **item_pp;
+-				item.key = (void *)(long)service_id;
+-				item_pp  = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+-				depinfo  = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
++			RC_DEPINFO *depinfo;
++			ENTRY item, **item_pp;
++			item.key = (void *)(long)service_id;
++			item_pp  = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
++			depinfo  = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+ */
+-				if (minimal_cost > UNAPM_AFTER)
++			if (minimal_cost > UNAPM_AFTER) {
++				if (printerr)
+ 					eerror("Found an unresolvable dependency: %s.", chain_strs[i]);
+-				else
++			} else {
++				if (printwarn)
+ 					ewarn("Found a solvable dependency loop: %s.", chain_strs[i]);
+ 			}
++
+ 			i++;
+ 		}
+ 		/*printf("minimal cost: %i\n", minimal_cost);*/
+@@ -1339,7 +1345,7 @@ rc_deptree_solve_loop(service_id_t **una
+ 						return;
+ 					}
+ 
+-					if (svc_id2depinfo_bt != NULL) {
++					if (printwarn) {
+ 						item.key     = (void *)(long)service_id_from;
+ 						item_pp      = tfind(&item, &svc_id2depinfo_bt, svc_id2depinfo_bt_compare);
+ 						depinfo_from = (RC_DEPINFO *)((ENTRY *)*item_pp)->data;
+@@ -1370,13 +1376,13 @@ rc_deptree_solve_loop(service_id_t **una
+ 
+ 		i = 0;
+ 		while (i < chain_count) {
+-			if (svc_id2depinfo_bt != NULL)
++			if (printwarn || printerr)
+ 				free(chain_strs[i]);
+ 			free(deptypes[i]);
+ 			free(chains[i]);
+ 			i++;
+ 		}
+-		if (svc_id2depinfo_bt != NULL)
++		if (printwarn || printerr)
+ 			free(chain_strs);
+ 		free(deptypes);
+ 		free(chains);
+@@ -1454,7 +1460,7 @@ rc_deptree_unapm_prepare_mixed(service_i
+    Phase 7 saves the depinfo object to disk
+    */
+ bool
+-rc_deptree_update(void)
++rc_deptree_update(RC_DT_FLAGS flags)
+ {
+ 	FILE *fp;
+ 	RC_DEPTREE *deptree, *providers;
+@@ -1790,7 +1796,7 @@ rc_deptree_update(void)
+ 				while (dep_num < dep_count) {
+ 					dep_num++;
+ 					if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
+-						loopfound = rc_deptree_solve_loop(unap_matrix, service_id, svc_id2depinfo_bt, dep_num);
++						loopfound = rc_deptree_solve_loop(unap_matrix, service_id, svc_id2depinfo_bt, dep_num, flags);
+ 						loopsolver_counter++;
+ 						break;
+ 					}
+--- openrc-0.12.4+20131230.orig/src/librc/rc.h.in
++++ openrc-0.12.4+20131230/src/librc/rc.h.in
+@@ -373,13 +373,21 @@ bool rc_older_than(const char *, const c
+  * @return pointer to the value, otherwise NULL */
+ char *rc_proc_getent(const char *);
+ 
++/*! @brief flags that may be passed to rc_deptree_update() */
++typedef enum
++{
++	/* Print warnings about found loops */
++	RCDTFLAGS_WARNINGS = 0x0001,
++} RC_DT_FLAGS;
++
+ /*! Update the cached dependency tree if it's older than any init script,
+  * its configuration file or an external configuration file the init script
+  * has specified.
+  * time_t returns the time of the newest file that the dependency tree
+  * will be checked against.
++ * @param flags
+  * @return true if successful, otherwise false */
+-bool rc_deptree_update(void);
++bool rc_deptree_update(RC_DT_FLAGS flags);
+ 
+ /*! Check if the cached dependency tree is older than any init script,
+  * its configuration file or an external configuration file the init script
+--- openrc-0.12.4+20131230.orig/src/rc/rc-depend.c
++++ openrc-0.12.4+20131230/src/rc/rc-depend.c
+@@ -76,7 +76,7 @@ _rc_deptree_load(int force, int *regen)
+ 		if (regen)
+ 			*regen = 1;
+ 		ebegin("Caching service dependencies");
+-		retval = rc_deptree_update() ? 0 : -1;
++		retval = rc_deptree_update(rc_conf_yesno("rc_loopsolver_warnings")?RCDTFLAGS_WARNINGS:0) ? 0 : -1;
+ 		eend (retval, "Failed to update the dependency tree");
+ 
+ 		if (retval == 0) {
+--- openrc-0.12.4+20131230.orig/src/test/units/early_loop_detector
++++ openrc-0.12.4+20131230/src/test/units/early_loop_detector
+@@ -93,7 +93,7 @@ int main() {
+ 			while (dep_num < dep_count) {
+ 				dep_num++;
+ 				if (unap_matrix[UNAPM_MIXED_EXPANDED][service_id][dep_num] == service_id) {
+-					loopfound = rc_deptree_solve_loop(unap_matrix, service_id, NULL, dep_num);
++					loopfound = rc_deptree_solve_loop(unap_matrix, service_id, NULL, dep_num, 0);
+ 					loopsolver_counter++;
+ 					break;
+ 				}
