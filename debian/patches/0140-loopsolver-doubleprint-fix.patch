@@ -1,0 +1,36 @@
+Description: Removed double-printing of "Solving the loop" message
+Author: Dmitry Yu Okunev <dyokunev@ut.mephi.ru> 0x8E30679C
+Origin: https://github.com/xaionaro/openrc
+Last-Update: 2014-02-06
+
+--- openrc-0.12.4+20131230.orig/src/librc/librc-depend.c
++++ openrc-0.12.4+20131230/src/librc/librc-depend.c
+@@ -1305,11 +1305,8 @@ rc_deptree_solve_loop(service_id_t **una
+ 						/* removing use/after from cache */
+ 						if (di_from != NULL) {
+ 							deptype_from = get_deptype(di_from, type);
+-							if (deptype_from != NULL) {
++							if (deptype_from != NULL)
+ 								rc_stringlist_delete(deptype_from->services, di_to->service);
+-								ewarn("Solving the loop by breaking %s %c> %s.",
+-									depinfo_to->service, deptype2char(unapm_type), depinfo_from->service);
+-							}
+ 						}
+ 
+ 						/* removing from the UNAP matrix */
+@@ -1317,9 +1314,14 @@ rc_deptree_solve_loop(service_id_t **una
+ 							dep_num   = 0;
+ 							dep_count = unap[unapm_type][dep_remove_from_service_id][0];
+ 							while (dep_num++ < dep_count) {
+-								if (unap[unapm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id)
++								if (unap[unapm_type][dep_remove_from_service_id][dep_num] == dep_remove_to_service_id) {
+ 									unap[unapm_type][dep_remove_from_service_id][dep_num] =
+ 										unap[unapm_type][dep_remove_from_service_id][dep_count--];
++
++									if (printwarn)
++										ewarn("Solving the loop by breaking %s %c> %s.",
++											depinfo_to->service, deptype2char(unapm_type), depinfo_from->service);
++								}
+ 							}
+ 							unap[unapm_type][dep_remove_from_service_id][0] = dep_count;
+ 						}
